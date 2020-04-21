@@ -1,3 +1,20 @@
+// take in several parsers and parses it until it no longer succeeds
+export function parse_many(p) {
+  return function (str) {
+    let res = perr(str);
+    let val = perr(str);
+    do {
+      let val_new = p(val.rest)
+      val_new.result = (val.result || []).concat([val_new.result])
+      if (!val_new.error) {
+        val = val_new
+      }
+      res = val_new
+    } while (!res.error);
+    return val;
+  }
+}
+
 // take in several parsers and succeeds if all of them succeed in sequence
 export function parse_and() {
   let args = arguments;
