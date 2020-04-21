@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { parse_lit, parse_lit_iw, parse_or, parse_and, parse_string_lit } from '../parser_combinator.js'
+import { parse_lit, parse_lit_iw, parse_or, parse_and, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
 
 function check(a, b) {
   return assert.deepStrictEqual(a, b)
@@ -14,6 +14,7 @@ describe('parse', function() {
   let parse_a_and_b = parse_and(parse_a, parse_b)
   let parse_a_and_b_iw = parse_and(parse_a_iw, parse_b_iw)
   let parse_str = parse_string_lit('"')
+  let parse_str_iw = parse_string_lit_iw('"')
 
   describe('_lit()', function() {
     it('has a', function() { check(parse_a("apple"), {error: false, rest: "pple", result: "a"}) })
@@ -33,6 +34,7 @@ describe('parse', function() {
     it('has ab', function() { check(parse_a_and_b_iw("a b b o t"), {error: false, rest: " b o t", result: ["a", "b"]}) })
     it('has ba', function() { check(parse_a_and_b_iw("b a n a n a"), {error: true, rest: "b a n a n a", result: null}) })
     it('has neither', function() { check(parse_a_and_b_iw(" o r a n g e"), {error: true, rest: " o r a n g e", result: null}) })
+    it('with str', function() { check(parse_str_iw('   "orange" '), {error: false, rest: " ", result: "orange"}) })
   });
   describe('_string_lit()', function() {
     it('has string', function() { check(parse_str('hello "world"'), {error: true, rest: 'hello "world"', result: null}) })

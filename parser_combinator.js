@@ -1,7 +1,6 @@
 // take in several parsers and succeeds if all of them succeed in sequence
 export function parse_and() {
   let args = arguments;
-  console.log(args)
   return function (str) {
     let i = 0;
     let val = perr(str)
@@ -23,7 +22,6 @@ export function parse_and() {
 // take in several parsers and succeeds if any succeed
 export function parse_or() {
   let args = arguments;
-  console.log(args)
   return function (str) {
     if (args.length < 1) {
       return perr(str)
@@ -64,6 +62,13 @@ export function parse_lit_iw(lit) {
   }
 }
 
+export function parse_string_lit_iw(open, close) {
+  let parse = parse_string_lit(open, close)
+  return function (str) {
+    let nstr = str.trimStart()
+    return parse_or(parse, perr(str))(nstr)
+  }
+}
 export function parse_string_lit(open, close) {
   let escp = "\\"
   if (!close) {
