@@ -1,3 +1,15 @@
+export function parse_between(p1, p2, p3) {
+}
+
+// applies a function on a parse if it succeeds
+export function parse_apply(f, p1) {
+  return function (str) {
+    let res = p1(str)
+    if (!res.error) { res.result = f(res.result) }
+    return res
+  }
+}
+
 // takes in a parser and parses it until it no longer succeeds. May be zero times (p*)
 export function parse_many(p) {
   return parse_optional(parse_some(p))
@@ -18,8 +30,8 @@ export function parse_optional(p) {
 // takes in a parser and parses it until it no longer succeeds. May not be zero times (p+)
 export function parse_some(p) {
   return function (str) {
-    let res = perr(str);
-    let val = perr(str);
+    let res = perr(str)
+    let val = perr(str)
     do {
       let val_new = p(val.rest)
       val_new.result = (val.result || []).concat([val_new.result])
@@ -30,6 +42,11 @@ export function parse_some(p) {
     } while (!res.error);
     return val;
   }
+}
+
+export function parse_or_lit() {
+  let args = [].slice.call(arguments).map(parse_lit)
+  return parse_or.apply(null, args)
 }
 
 // take in several parsers and succeeds if all of them succeed in sequence
