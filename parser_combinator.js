@@ -1,3 +1,8 @@
+// takes in a parser and parses it until it no longer succeeds. May be zero times (p*)
+export function parse_many(p) {
+  return parse_optional(parse_some(p))
+}
+
 // takes in a parser and parses it if it can (p?)
 export function parse_optional(p) {
   return function (str) {
@@ -10,8 +15,8 @@ export function parse_optional(p) {
   }
 }
 
-// takes in a parser and parses it until it no longer succeeds (p*)
-export function parse_many(p) {
+// takes in a parser and parses it until it no longer succeeds. May not be zero times (p+)
+export function parse_some(p) {
   return function (str) {
     let res = perr(str);
     let val = perr(str);

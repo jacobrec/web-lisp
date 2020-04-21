@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { parse_lit, parse_lit_iw, parse_or, parse_and, parse_many, parse_optional, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
+import { parse_lit, parse_lit_iw, parse_or, parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
 
 function check(a, b) {
   return assert.deepStrictEqual(a, b)
@@ -16,6 +16,7 @@ describe('parse', function() {
   let parse_str = parse_string_lit('"')
   let parse_str_iw = parse_string_lit_iw('"')
   let parse_many_a = parse_many(parse_a)
+  let parse_some_a = parse_some(parse_a)
   let parse_if_a = parse_optional(parse_a)
 
   describe('_lit()', function() {
@@ -48,13 +49,18 @@ describe('parse', function() {
     it('escaped first', function() { check(parse_str('"\\\" world"'), {error: false, rest: "", result: '\" world'}) })
     it('escaped escape', function() { check(parse_str('"hello\\\\" world'), {error: false, rest: " world", result: 'hello\\'}) })
   })
-  describe('_many()', function() {
-    it('has aadvark', function() { check(parse_many_a("aadvark"), {error: false, rest: "dvark", result: ["a", "a"]}) })
-    it('has apple', function() { check(parse_many_a("apple"), {error: false, rest: "pple", result: ["a"]}) })
-    it('has banana', function() { check(parse_many_a("banana"), {error: true, rest: "banana", result: null}) })
+  describe('_some()', function() {
+    it('has aadvark', function() { check(parse_some_a("aadvark"), {error: false, rest: "dvark", result: ["a", "a"]}) })
+    it('has apple', function() { check(parse_some_a("apple"), {error: false, rest: "pple", result: ["a"]}) })
+    it('has banana', function() { check(parse_some_a("banana"), {error: true, rest: "banana", result: null}) })
   })
   describe('_optional()', function() {
     it('has apple', function() { check(parse_if_a("apple"), {error: false, rest: "pple", result: "a"}) })
     it('has banana', function() { check(parse_if_a("banana"), {error: false, rest: "banana", result: null}) })
+  })
+  describe('_many()', function() {
+    it('has aadvark', function() { check(parse_many_a("aadvark"), {error: false, rest: "dvark", result: ["a", "a"]}) })
+    it('has apple', function() { check(parse_many_a("apple"), {error: false, rest: "pple", result: ["a"]}) })
+    it('has banana', function() { check(parse_many_a("banana"), {error: false, rest: "banana", result: null}) })
   })
 })
