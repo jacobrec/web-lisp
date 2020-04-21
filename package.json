@@ -1,0 +1,16 @@
+{
+  "name": "web-lisp",
+  "version": "0.1.0",
+  "description": "A lisp for both front and back end",
+  "main": "main.js",
+  "scripts": {
+    "test": "mocha --experimental-modules",
+    "start": "node --experimental-modules main.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "mocha": "^7.1.1"
+  }
+}
