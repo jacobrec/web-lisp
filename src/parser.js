@@ -2,6 +2,7 @@ import {
   parse_or,
   parse_apply,
   parse_some,
+  parse_many,
   parse_between,
   parse_until,
   parse_lit_iw,
@@ -27,7 +28,7 @@ let parse_sexp = parse_sexp_fn()
 function parse_sexp_fn() {
   return (str) => parse_between(
     parse_lit_iw("("),
-    parse_some(parse_atom_fn()),
+    parse_many(parse_atom_fn()),
     parse_lit_iw(")")
   )(str)
 }
@@ -54,7 +55,7 @@ function parse_atom_fn() {
 import util from 'util'
 export function parse(str) {
   let data = parse_atom(str)
-  // console.log(util.inspect(data, false, null, true)) // showHidden: false, depth: null, colors: true
+  console.log(util.inspect(data, false, null, true)) // showHidden: false, depth: null, colors: true
   return data.result
 }
 

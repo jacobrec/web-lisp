@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { parse_apply, parse_int, parse_digit, parse_spaces, parse_float, parse_or_lit, parse_lit, parse_lit_iw, parse_or,
-         parse_between_lit, parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
+         parse_between_lit, parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../src/parser_combinator.js'
 
 function check(a, b) {
   return assert.deepStrictEqual(a, b)

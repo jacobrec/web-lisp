@@ -22,15 +22,28 @@ function def(args) {
   // TODO: asserts for valid forms
   return scope[evaluate(args[0])] = evaluate(args[1])
 }
+function set(args) {
+  // TODO: asserts for valid forms
+  return scope[evaluate(args[0])] = evaluate(args[1])
+}
+function do_expr(args) {
+  // TODO: asserts for valid forms
+  let res = null;
+  for (let a in args) {
+    res = evaluate(a)
+  }
+  return res
+}
 
 let forms = {
   if: if_expr,
   fn: lambda,
   def,
+  set,
+  do: do_expr,
 }
 
 export function evaluate(atom) {
-  console.log("TRACE: ", atom)
   switch (atom.type) {
   case "str": return atom.value
   case "num": return atom.value

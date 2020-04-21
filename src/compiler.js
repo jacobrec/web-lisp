@@ -1,7 +1,6 @@
 function lambda(args) {
   // TODO: asserts for valid forms
-  let fn_args = args[0].value.map(evaluate).concat([`"use strict"; return ${compile_expr(args[1])}`])
-  return Function.apply(null, fn_args)
+  return `(${(args[0].value || []).join(',')}) => (${compile(args[1])})`
 }
 function if_expr(args) {
   // TODO: asserts for valid forms
@@ -11,22 +10,34 @@ function def(args) {
   // TODO: asserts for valid forms
   return `let ${compile(args[0])} = (${compile(args[1])})`
 }
+function set(args) {
+  // TODO: asserts for valid forms
+  return `${compile(args[0])} = (${compile(args[1])})`
+}
+function do_expr(args) {
+  // TODO: asserts for valid forms
+  return `(${args.map(e => `(${compile(e)})`).join(',')})`
+}
+
 
 
 let forms = {
   if: if_expr,
-  def: def,
-  fn: lambda
+  def,
+  set,
+  fn: lambda,
+  do: do_expr
 }
 
 export function compile(atom) {
+  console.log("COMP:", atom)
   switch (atom.type) {
   case "str": return `"${atom.value}"`
   case "num": return `${atom.value}`
   case "sym": return `${atom.value}`
   case "exp": return compile_expr(atom)
   }
-  throw `unknown type to compile: [${JSON.stringify(atom)}]`
+  throw `unknown type to compile: <${JSON.stringify(atom)}>`
 }
 
 export function compile_expr(expr) {

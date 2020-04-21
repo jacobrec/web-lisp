@@ -1,5 +1,5 @@
-import { parse } from "./parser.js"
-import { evaluate } from "./eval.js"
+import { parse } from "./src/parser.js"
+import { evaluate } from "./src/eval.js"
 
 parse("4")
 parse("4.3")
@@ -30,3 +30,7 @@ evaluate(parse(`(def fib (fn (n)
 
 console.log(evaluate(parse(`(fib 10)`)))
 console.log(evaluate(parse(`(fib 30)`)))
+
+evaluate(parse(`(def test_fn (fn (n) (fn () (do (set n (- n 1)) n))))`))
+evaluate(parse(`(def t1 (test_fn 5))`))
+console.log(evaluate(parse(`(+ (t1) (t1))`))) // 4 + 3
