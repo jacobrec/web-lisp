@@ -15,6 +15,12 @@ let parse_int = parse_apply(function (res) {
   }
   return val
 }, parse_some(parse_digit))
+let parse_float = parse_apply(function (res) {
+  res[0] = res[0] | 0
+  res = res.reduce((a,b) => a+b)
+  res = parseFloat(res)
+  return res
+}, parse_and(parse_optional(parse_int), parse_lit("."), parse_int))
 
 describe('parse', function() {
   let parse_a = parse_lit("a")
@@ -85,5 +91,8 @@ describe('parse', function() {
     it('has addition', function() { check(parse_add("1 + 3"), {error: false, rest: "", result: 4}) })
     it('has incomplete addition', function() { check(parse_add("1 +"), {error: true, rest: "1 +", result: null}) })
     it('has no addition', function() { check(parse_add("a"), {error: true, rest: "a", result: null}) })
+    it('has float', function() { check(parse_float("1.2"), {error: false, rest: "", result: 1.2}) })
+    it('has float no lead', function() { check(parse_float(".2"), {error: false, rest: "", result: 0.2}) })
+    it('has no float', function() { check(parse_float("a"), {error: true, rest: "a", result: null}) })
   })
 })
