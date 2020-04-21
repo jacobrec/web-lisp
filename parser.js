@@ -7,6 +7,7 @@ import {
   parse_lit_iw,
   parse_lit,
   parse_ignore_leading_white,
+  parse_white,
 
   parse_int,
   parse_float,
@@ -31,7 +32,7 @@ function parse_sexp_fn() {
   )(str)
 }
 
-let parse_identifier = parse_until(parse_or(parse_lit(" "), parse_lit(")"), parse_lit("(")))
+let parse_identifier = parse_until(parse_or(parse_white, parse_lit(")"), parse_lit("(")))
 // parses a single atom
 // returns
 // {

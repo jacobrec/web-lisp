@@ -180,12 +180,13 @@ export function parse_error() {
   }
 }
 
-export let parse_spaces_if = parse_many(parse_lit(" "))
+export let parse_white = parse_or(parse_lit("\n"), parse_lit(" "))
+export let parse_spaces_if = parse_many(parse_white)
 export function parse_ignore_leading_white(p) {
   return parse_apply((res) => res[1], parse_and(parse_spaces_if, p))
 }
 
-export let parse_spaces = parse_some(parse_lit(" "))
+export let parse_spaces = parse_some(parse_white)
 export let parse_digit = parse_apply(parseInt, parse_or_lit("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"))
 export let parse_int = parse_apply(function (res) {
   let val = 0;

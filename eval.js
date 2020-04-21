@@ -1,3 +1,5 @@
+import { compile_expr } from './compiler.js'
+
 var scope = typeof global !== 'undefined' ?
              global :
              typeof self !== 'undefined' ?
@@ -6,14 +8,11 @@ var scope = typeof global !== 'undefined' ?
                window :
                {};
 
-function compile(expr) {
-  return 'a + b'
-}
-
 function lambda(args) {
   // TODO: asserts for valid forms
-  let fn_args = args[0].value.map(evaluate).concat([`"use strict"; return ${compile(args[1])}`])
-  return Function.apply(null, fn_args)
+  let fn_args = args[0].value.map(evaluate).concat([`"use strict"; return ${compile_expr(args[1])}`])
+  console.log("COMPILED: ", fn_args)
+  return Function.apply(null, fn_args).bind(scope)
 }
 function if_expr(args) {
   // TODO: asserts for valid forms
@@ -26,11 +25,12 @@ function def(args) {
 
 let forms = {
   if: if_expr,
-  lambda,
+  fn: lambda,
   def,
 }
 
 export function evaluate(atom) {
+  console.log("TRACE: ", atom)
   switch (atom.type) {
   case "str": return atom.value
   case "num": return atom.value
@@ -55,6 +55,10 @@ function funcall(name, args) {
   return fn.apply(null, eval_args)
 }
 
+scope["-"] = function () {
+  let val = Array.from(arguments).reduce((a,b) => a-b)
+  return val
+}
 scope["+"] = function () {
   return Array.from(arguments).reduce((a,b) => a+b, 0)
 }
@@ -69,3 +73,4 @@ scope["<"] = function () {
 function error(msg) {
     throw `Error: ${msg}`
 }
+
