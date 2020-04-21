@@ -1,26 +1,10 @@
 import assert from 'assert'
-import { parse_apply, parse_or_lit, parse_lit, parse_lit_iw, parse_or, parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
+import { parse_apply, parse_int, parse_digit, parse_spaces, parse_float, parse_or_lit, parse_lit, parse_lit_iw, parse_or,
+         parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
 
 function check(a, b) {
   return assert.deepStrictEqual(a, b)
 }
-
-let parse_spaces = parse_some(parse_lit(" "))
-let parse_digit = parse_apply(parseInt, parse_or_lit("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"))
-let parse_int = parse_apply(function (res) {
-  let val = 0;
-  for (let x of res) {
-    val *= 10
-    val += x
-  }
-  return val
-}, parse_some(parse_digit))
-let parse_float = parse_apply(function (res) {
-  res[0] = res[0] | 0
-  res = res.reduce((a,b) => a+b)
-  res = parseFloat(res)
-  return res
-}, parse_and(parse_optional(parse_int), parse_lit("."), parse_int))
 
 describe('parse', function() {
   let parse_a = parse_lit("a")

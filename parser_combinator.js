@@ -160,3 +160,21 @@ export function parse_error() {
     return { error: true, result: null, rest: str }
   }
 }
+
+
+export let parse_spaces = parse_some(parse_lit(" "))
+export let parse_digit = parse_apply(parseInt, parse_or_lit("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"))
+export let parse_int = parse_apply(function (res) {
+  let val = 0;
+  for (let x of res) {
+    val *= 10
+    val += x
+  }
+  return val
+}, parse_some(parse_digit))
+export let parse_float = parse_apply(function (res) {
+  res[0] = res[0] | 0
+  res = res.reduce((a,b) => a+b)
+  res = parseFloat(res)
+  return res
+}, parse_and(parse_optional(parse_int), parse_lit("."), parse_int))
