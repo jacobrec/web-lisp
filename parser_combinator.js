@@ -1,4 +1,16 @@
-// take in several parsers and parses it until it no longer succeeds
+// takes in a parser and parses it if it can (p?)
+export function parse_optional(p) {
+  return function (str) {
+    let val = p(str)
+    if (val.error) {
+      return { error: false, result: null, rest: str }
+    } else {
+      return val
+    }
+  }
+}
+
+// takes in a parser and parses it until it no longer succeeds (p*)
 export function parse_many(p) {
   return function (str) {
     let res = perr(str);
