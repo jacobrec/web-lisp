@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { parse_apply, parse_int, parse_digit, parse_spaces, parse_float, parse_or_lit, parse_lit, parse_lit_iw, parse_or,
-         parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
+         parse_between_lit, parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../parser_combinator.js'
 
 function check(a, b) {
   return assert.deepStrictEqual(a, b)
@@ -20,6 +20,7 @@ describe('parse', function() {
   let parse_some_a = parse_some(parse_a)
   let parse_if_a = parse_optional(parse_a)
   let parse_add = parse_apply(function (res) { return res[0] + res[3]}, parse_and(parse_int, parse_lit_iw("+"), parse_spaces, parse_int))
+  let parse_between_bracks = parse_between_lit("(", parse_add, ")")
 
   describe('_lit()', function() {
     it('has a', function() { check(parse_a("apple"), {error: false, rest: "pple", result: "a"}) })
@@ -78,5 +79,10 @@ describe('parse', function() {
     it('has float', function() { check(parse_float("1.2"), {error: false, rest: "", result: 1.2}) })
     it('has float no lead', function() { check(parse_float(".2"), {error: false, rest: "", result: 0.2}) })
     it('has no float', function() { check(parse_float("a"), {error: true, rest: "a", result: null}) })
+  })
+  describe('_between()', function() {
+    it('succeeds', function() { check(parse_between_bracks("(1 + 3)"), {error: false, rest: "", result: 4}) })
+    it('fail_start', function() { check(parse_between_bracks("1 + 3)"), {error: true, rest: "1 + 3)", result: null}) })
+    it('fail_end', function() { check(parse_between_bracks("(1 + 3"), {error: true, rest: "(1 + 3", result: null}) })
   })
 })

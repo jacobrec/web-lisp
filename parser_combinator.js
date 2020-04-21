@@ -1,4 +1,9 @@
+export function parse_between_lit(p1, p2, p3) {
+  return parse_between(parse_lit(p1), p2, parse_lit(p3))
+}
+
 export function parse_between(p1, p2, p3) {
+  return parse_apply(function (res) { return res[1] }, parse_and(p1, p2, p3))
 }
 
 // applies a function on a parse if it succeeds
