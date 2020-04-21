@@ -77,3 +77,14 @@ export function parse_lit(lit) {
     }
   }
 }
+
+export function parse_lit_iw(lit) {
+  return function (str) {
+    let nstr = str.trimStart()
+    if (nstr.startsWith(lit)) {
+      return { error: false, result: lit, rest: nstr.substr(lit.length) }
+    } else {
+      return { error: true, result: null, rest: str }
+    }
+  }
+}
