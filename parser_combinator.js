@@ -1,3 +1,17 @@
+export function parse_until(p) {
+  return function (str) {
+    let i = 0
+    while (p(str.charAt(i)).error && i < str.length) {
+      i++
+    }
+    if (i == 0) {
+      return {error: true, result: null, rest: str}
+    } else {
+      return {error: false, result: str.substr(0, i), rest: str.substr(i)}
+    }
+  }
+}
+
 export function parse_between_lit(p1, p2, p3) {
   return parse_between(parse_lit(p1), p2, parse_lit(p3))
 }
@@ -166,6 +180,10 @@ export function parse_error() {
   }
 }
 
+export let parse_spaces_if = parse_many(parse_lit(" "))
+export function parse_ignore_leading_white(p) {
+  return parse_apply((res) => res[1], parse_and(parse_spaces_if, p))
+}
 
 export let parse_spaces = parse_some(parse_lit(" "))
 export let parse_digit = parse_apply(parseInt, parse_or_lit("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"))
