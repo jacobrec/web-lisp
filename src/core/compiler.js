@@ -27,6 +27,7 @@ export function compile(atom) {
   case "str": return `"${atom.value}"`
   case "num": return `${atom.value}`
   case "sym": return `${atom.value}`
+  case "bol": return `${atom.value}`
   case "exp": return compile_expr(atom)
   }
   throw `unknown type to compile: <${JSON.stringify(atom)}>`

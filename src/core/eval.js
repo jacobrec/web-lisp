@@ -39,6 +39,7 @@ export function evaluate(atom) {
   switch (atom.type) {
   case "str": return atom.value
   case "num": return atom.value
+  case "bol": return atom.value
   case "sym": return scope[atom.value] || atom.value
   case "exp":
     let name = evaluate(atom.value[0])

@@ -45,6 +45,8 @@ function parse_atom_fn() {
     parse_apply(r => ({type:"num", value: r}), parse_float),
     parse_apply(r => ({type:"num", value: r}), parse_int),
     parse_apply(r => ({type:"str", value: r}), parse_string_lit('"')),
+    parse_apply(r => ({type:"bol", value: true}), parse_lit("true")),
+    parse_apply(r => ({type:"bol", value: false}), parse_lit("false")),
     parse_apply(r => ({type:"sym", value: r}), parse_identifier),
     parse_apply(r => ({type:"exp", value: r}), parse_sexp_fn()),
   )(str)
