@@ -101,4 +101,25 @@ describe('end-to-end', function() {
     it('if', function() { check(evaluate(parse('(if (< 2 1) "t" "f")')), "f") })
     it('true literal', function() { check(evaluate(parse('(if true "t" "f")')), "t") })
     it('false literal', function() { check(evaluate(parse('(if false "t" "f")')), "f") })
+
+    it('lambda function', function() { check(evaluate(parse('((fn (a b) (+ a b)) 1 2)')), 3) })
+    it('define var', function() { check(evaluate(parse('(def y 3)')), 3) })
+    evaluate(parse('(def add2 (fn (a b) (+ a b)))'))
+    it('named function 1', function() { check(evaluate(parse('(add2 y 5)')), 8) })
+    evaluate(parse('(def test (fn (a b) (if (< a b) b a)))'))
+    it('named function 2', function() { check(evaluate(parse('(test 10 30)')), 30) })
+    it('named function 3', function() { check(evaluate(parse('(test 43 30)')), 43) })
+
+    evaluate(parse(`(def fib (fn (n)
+                      (if (< n 2)
+                          n
+                          (+ (fib (- n 1))
+                             (fib (- n 2))))))`))
+
+    it('fibinicci 10', function() { check(evaluate(parse('(fib 10)')), 55) })
+    it('fibinicci 30', function() { check(evaluate(parse('(fib 30)')), 832040) })
+
+    evaluate(parse(`(def test_fn (fn (n) (fn () (set n (- n 1)) n)))`))
+    evaluate(parse(`(def t1 (test_fn 5))`))
+    it('nested function', function() { check(evaluate(parse('(+ (t1) (t1))')), 7) })
 })
