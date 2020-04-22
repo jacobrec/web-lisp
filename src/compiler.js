@@ -14,23 +14,15 @@ function set(args) {
   // TODO: asserts for valid forms
   return `${compile(args[0])} = (${compile(args[1])})`
 }
-function do_expr(args) {
-  // TODO: asserts for valid forms
-  return `(${args.map(e => `(${compile(e)})`).join(',')})`
-}
-
-
 
 let forms = {
   if: if_expr,
   def,
   set,
   fn: lambda,
-  do: do_expr
 }
 
 export function compile(atom) {
-  console.log("COMP:", atom)
   switch (atom.type) {
   case "str": return `"${atom.value}"`
   case "num": return `${atom.value}`
@@ -40,7 +32,7 @@ export function compile(atom) {
   throw `unknown type to compile: <${JSON.stringify(atom)}>`
 }
 
-export function compile_expr(expr) {
+function compile_expr(expr) {
   let name = compile(expr.value[0])
   let args = expr.value.slice(1)
   if (forms[name]) {
@@ -48,7 +40,7 @@ export function compile_expr(expr) {
   } else if (["+", "-", "*", "/", "<", ">", "<=", ">=", "="].includes(name)) {
     return compile_binop(name, args)
   }
-  let compiled = `this['${name}'](${args.map(compile).join(',')})`
+  let compiled = `(${name}||this['${name}'])(${args.map(compile).join(',')})`
   return compiled
 }
 

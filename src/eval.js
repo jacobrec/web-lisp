@@ -1,4 +1,4 @@
-import { compile_expr } from './compiler.js'
+import { compile } from './compiler.js'
 
 var scope = typeof global !== 'undefined' ?
              global :
@@ -10,8 +10,9 @@ var scope = typeof global !== 'undefined' ?
 
 function lambda(args) {
   // TODO: asserts for valid forms
-  let fn_args = args[0].value.map(evaluate).concat([`"use strict"; return ${compile_expr(args[1])}`])
-  console.log("COMPILED: ", fn_args)
+  let body_stmts = args.slice(1).map(compile)
+  body_stmts[body_stmts.length - 1] = 'return ' + body_stmts[body_stmts.length - 1]
+  let fn_args = (args[0].value || []).map(evaluate).concat([`"use strict"; ${body_stmts.join(';')}`])
   return Function.apply(null, fn_args).bind(scope)
 }
 function if_expr(args) {
@@ -26,21 +27,12 @@ function set(args) {
   // TODO: asserts for valid forms
   return scope[evaluate(args[0])] = evaluate(args[1])
 }
-function do_expr(args) {
-  // TODO: asserts for valid forms
-  let res = null;
-  for (let a in args) {
-    res = evaluate(a)
-  }
-  return res
-}
 
 let forms = {
   if: if_expr,
   fn: lambda,
   def,
   set,
-  do: do_expr,
 }
 
 export function evaluate(atom) {
