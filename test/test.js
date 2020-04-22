@@ -2,6 +2,7 @@ import assert from 'assert'
 import { parse_apply, parse_int, parse_digit, parse_spaces, parse_float, parse_or_lit, parse_lit, parse_lit_iw, parse_or,
          parse_between_lit, parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../src/parser_combinator.js'
 
+
 function check(a, b) {
   return assert.deepStrictEqual(a, b)
 }
@@ -85,4 +86,12 @@ describe('parse', function() {
     it('fail_start', function() { check(parse_between_bracks("1 + 3)"), {error: true, rest: "1 + 3)", result: null}) })
     it('fail_end', function() { check(parse_between_bracks("(1 + 3"), {error: true, rest: "(1 + 3", result: null}) })
   })
+})
+
+import { evaluate } from '../src/core/eval.js'
+import { compile } from '../src/core/compiler.js'
+import { parse } from '../src/core/parser.js'
+
+describe('end-to-end', function() {
+    it('succeeds', function() { check(evaluate(parse("(+ 1 2 3)")), 6) })
 })

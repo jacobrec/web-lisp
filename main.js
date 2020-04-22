@@ -1,12 +1,6 @@
-import { parse } from "./src/parser.js"
-import { evaluate } from "./src/eval.js"
+import { parse } from "./src/core/parser.js"
+import { evaluate } from "./src/core/eval.js"
 
-parse("4")
-parse("4.3")
-parse('"Hello"')
-parse("(1 2 3)")
-parse("(1 (2.0 2.1 2.2) 3)")
-parse("(+ 1 2 3)")
 // console.log(evaluate(parse("(+ 1 2 3)")))
 // console.log(evaluate(parse("(* 4 5)")))
 // console.log(evaluate(parse("(< 1 2)")))

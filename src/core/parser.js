@@ -13,7 +13,7 @@ import {
   parse_int,
   parse_float,
   parse_string_lit,
-} from "./parser_combinator.js"
+} from "../parser_combinator.js"
 
 
 let parse_atom = parse_atom_fn()
