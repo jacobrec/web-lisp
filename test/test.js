@@ -122,4 +122,13 @@ describe('end-to-end', function() {
     evaluate(parse(`(def test_fn (fn (n) (fn () (set n (- n 1)) n)))`))
     evaluate(parse(`(def t1 (test_fn 5))`))
     it('nested function', function() { check(evaluate(parse('(+ (t1) (t1))')), 7) })
+
+    evaluate(parse(`
+    (def test2_fn
+      (fn ()
+        (def x (fn () 5))
+        (def y (x))
+        (set y (+ y 1))
+        y))`))
+    it('def/set in function', function() { check(evaluate(parse('(test2_fn)')), 6) })
 })
