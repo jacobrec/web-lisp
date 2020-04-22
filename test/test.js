@@ -93,5 +93,12 @@ import { compile } from '../src/core/compiler.js'
 import { parse } from '../src/core/parser.js'
 
 describe('end-to-end', function() {
-    it('succeeds', function() { check(evaluate(parse("(+ 1 2 3)")), 6) })
+    it('addition', function() { check(evaluate(parse("(+ 1 2 3)")), 6) })
+    it('multiplication', function() { check(evaluate(parse("(* 4 5)")), 20) })
+    it('equality binary', function() { check(evaluate(parse("(< 1 2)")), true) })
+    it('equality non binary', function() { check(evaluate(parse("(< 1 2 3)")), true) })
+    it('equality false', function() { check(evaluate(parse("(< 3 2 3)")), false) })
+    it('if', function() { check(evaluate(parse('(if (< 2 1) "t" "f")')), "f") })
+    it('true literal', function() { check(evaluate(parse('(if true "t" "f")')), "t") })
+    it('false literal', function() { check(evaluate(parse('(if false "t" "f")')), "f") })
 })

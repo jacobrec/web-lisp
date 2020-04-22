@@ -1,12 +1,6 @@
 import { parse } from "./src/core/parser.js"
 import { evaluate } from "./src/core/eval.js"
 
-// console.log(evaluate(parse("(+ 1 2 3)")))
-// console.log(evaluate(parse("(* 4 5)")))
-// console.log(evaluate(parse("(< 1 2)")))
-// console.log(evaluate(parse("(< 1 2 3)")))
-// console.log(evaluate(parse("(< 3 2 3)")))
-// console.log(evaluate(parse('(if (< 2 1) "t" "f")')))
 // console.log("res: ", evaluate(parse('((fn (a b) (+ a b)) 1 2)')))
 // console.log("res: ", evaluate(parse('(def y 3)')))
 // console.log("res: ", evaluate(parse('(def add2 (fn (a b) (+ a b)))')))
