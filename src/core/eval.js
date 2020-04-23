@@ -1,74 +1,29 @@
-import { compile } from './compiler.js'
-import { stringify } from './printer.js'
+import { compile_tl } from './compiler.js'
+import { jsprint, print } from './printer.js'
+import { get_scope } from './runtime.js'
 
-var scope = typeof global !== 'undefined' ?
-             global :
-             typeof self !== 'undefined' ?
-               self :
-               typeof window !== 'undefined' ?
-               window :
-               {};
-
-function lambda(args) {
-  // TODO: asserts for valid forms
-  let body_stmts = args.slice(1).map(compile)
-  body_stmts[body_stmts.length - 1] = 'return ' + body_stmts[body_stmts.length - 1]
-  let fn_args = (args[0].value || []).map(evaluate).concat([`"use strict"; ${body_stmts.join(';')}`])
-  // console.log(`compiled function to ${body_stmts}`)
-  return Function.apply(null, fn_args).bind(scope)
-}
-function if_expr(args) {
-  // TODO: asserts for valid forms
-  return evaluate(args[0]) ? evaluate(args[1]) : evaluate(args[2])
-}
-function def(args) {
-  // TODO: asserts for valid forms
-  return scope[evaluate(args[0])] = evaluate(args[1])
-}
-function set(args) {
-  // TODO: asserts for valid forms
-  return scope[evaluate(args[0])] = evaluate(args[1])
-}
-function quote(args) {
-  return `${stringify(args[0])}`
-}
-
-let forms = {
-  if: if_expr,
-  fn: lambda,
-  def,
-  set,
-  quote,
-}
+let is_def = (atom) => atom.type === "exp" && atom.value[0].value === "def" && atom.value[0].type === "sym"
 
 export function evaluate(atom) {
-  switch (atom.type) {
-  case "str": return atom.value
-  case "num": return atom.value
-  case "bol": return atom.value
-  case "sym": return scope[atom.value] || atom.value
-  case "exp":
-    let name = evaluate(atom.value[0])
-    let args = atom.value.slice(1)
-    return funcall(name, args)
+  // jsprint(get_scope())
+  print(atom)
+  if (is_def(atom)) {
+    console.log(`    get_scope()['${atom.value[1].value}'] = jeval("${compile_tl(atom.value[2])}")`)
+
+    let val = jeval(compile_tl(atom.value[2]))
+    get_scope()[atom.value[1].value] = val
+    // print(atom)
+    return val
+  } else {
+    console.log(`    eval("${compile_tl(atom)}")`)
+    return jeval(compile_tl(atom))
   }
-  throw "unknown type to eval"
 }
 
-function funcall(name, args) {
-  if (forms[name]) {
-    return forms[name](args)
-  }
-  let fn = (typeof name === "function") ? name : scope[name]
-  if (!fn) {
-    error(`function "${name}" not in scope`)
-  }
-  let eval_args = args.map(evaluate)
-  return fn.apply(null, eval_args)
+function jeval(str_code) {
+  // console.log(str_code)
+  let r = Function(`return (${str_code})`).bind(get_scope())()
+
+  // jsprint(r)
+  return r
 }
-
-
-function error(msg) {
-    throw `Error: ${msg}`
-}
-

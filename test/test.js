@@ -92,8 +92,9 @@ describe('parse', function() {
 })
 
 import { evaluate } from '../src/core/eval.js'
-import { compile } from '../src/core/compiler.js'
+import { compile_tl } from '../src/core/compiler.js'
 import { parse } from '../src/core/parser.js'
+let compile = compile_tl
 
 describe('end-to-end', function() {
   it('addition', function() { check(evaluate(parse("(+ 1 2 3)")), 6) })

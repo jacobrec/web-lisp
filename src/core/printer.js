@@ -1,3 +1,5 @@
+import util from 'util'
+
 export function print(obj) {
   console.log(stringify(obj))
 }
@@ -8,7 +10,11 @@ export function stringify(atom) {
   case "num": return `${atom.value}`
   case "sym": return `${atom.value}`
   case "bol": return `${atom.value}`
-  case "exp": return `(${atom.value.map(stringify).join(' ')})`
+  case "exp": return `(${(atom.value||[]).map(stringify).join(' ')})`
   }
   throw `unknown type to print: <${JSON.stringify(atom)}>`
+}
+
+export function jsprint(obj) {
+  console.log(util.inspect(obj, false, null, true)) // showHidden: false, depth: null, colors: true
 }

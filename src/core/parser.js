@@ -54,10 +54,8 @@ function parse_atom_fn() {
   return parse_ignore_leading_white(parse_data)
 }
 
-import util from 'util'
 export function parse(str) {
   let data = parse_atom(str)
-  // console.log(util.inspect(data, false, null, true)) // showHidden: false, depth: null, colors: true
   return data.result
 }
 

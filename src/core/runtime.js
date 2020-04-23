@@ -1,12 +1,22 @@
-var scope = typeof global !== 'undefined' ?
-             global :
-             typeof self !== 'undefined' ?
-               self :
-               typeof window !== 'undefined' ?
-               window :
-               {};
+const scoper = 'jlisp_global'
+
+export function get_global() {
+  return typeof global !== 'undefined' ?
+    global :
+    typeof self !== 'undefined' ?
+    self :
+    typeof window !== 'undefined' ?
+    window :
+    {}
+}
+export function get_scope() {
+  return get_global()[scoper]
+}
 
 export function init_runtime() {
+  get_global()[scoper] = {}
+  let scope = get_scope()
+
   scope["-"] = function () {
     let val = Array.from(arguments).reduce((a,b) => a-b)
     return val
