@@ -61,20 +61,6 @@ function funcall(name, args) {
   return fn.apply(null, eval_args)
 }
 
-scope["-"] = function () {
-  let val = Array.from(arguments).reduce((a,b) => a-b)
-  return val
-}
-scope["+"] = function () {
-  return Array.from(arguments).reduce((a,b) => a+b, 0)
-}
-scope["*"] = function () {
-  return Array.from(arguments).reduce((a,b) => a*b, 1)
-}
-scope["<"] = function () {
-  return Array.from(arguments).slice(1).reduce((a,b) => ({last: b, is_good: a.is_good && a.last < b}), {last: arguments[0], is_good: true}).is_good
-}
-
 
 function error(msg) {
     throw `Error: ${msg}`

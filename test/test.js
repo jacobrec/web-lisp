@@ -2,6 +2,9 @@ import assert from 'assert'
 import { parse_apply, parse_int, parse_digit, parse_spaces, parse_float, parse_or_lit, parse_lit, parse_lit_iw, parse_or,
          parse_between_lit, parse_and, parse_many, parse_some, parse_optional, parse_string_lit, parse_string_lit_iw } from '../src/parser_combinator.js'
 
+import { init_runtime } from "../src/core/runtime.js"
+init_runtime()
+
 
 function check(a, b) {
   return assert.deepStrictEqual(a, b)
@@ -93,42 +96,46 @@ import { compile } from '../src/core/compiler.js'
 import { parse } from '../src/core/parser.js'
 
 describe('end-to-end', function() {
-    it('addition', function() { check(evaluate(parse("(+ 1 2 3)")), 6) })
-    it('multiplication', function() { check(evaluate(parse("(* 4 5)")), 20) })
-    it('equality binary', function() { check(evaluate(parse("(< 1 2)")), true) })
-    it('equality non binary', function() { check(evaluate(parse("(< 1 2 3)")), true) })
-    it('equality false', function() { check(evaluate(parse("(< 3 2 3)")), false) })
-    it('if', function() { check(evaluate(parse('(if (< 2 1) "t" "f")')), "f") })
-    it('true literal', function() { check(evaluate(parse('(if true "t" "f")')), "t") })
-    it('false literal', function() { check(evaluate(parse('(if false "t" "f")')), "f") })
+  it('addition', function() { check(evaluate(parse("(+ 1 2 3)")), 6) })
+  it('multiplication', function() { check(evaluate(parse("(* 4 5)")), 20) })
+  it('equality binary', function() { check(evaluate(parse("(< 1 2)")), true) })
+  it('equality non binary', function() { check(evaluate(parse("(< 1 2 3)")), true) })
+  it('equality false', function() { check(evaluate(parse("(< 3 2 3)")), false) })
+  it('if', function() { check(evaluate(parse('(if (< 2 1) "t" "f")')), "f") })
+  it('true literal', function() { check(evaluate(parse('(if true "t" "f")')), "t") })
+  it('false literal', function() { check(evaluate(parse('(if false "t" "f")')), "f") })
 
-    it('lambda function', function() { check(evaluate(parse('((fn (a b) (+ a b)) 1 2)')), 3) })
-    it('define var', function() { check(evaluate(parse('(def y 3)')), 3) })
-    evaluate(parse('(def add2 (fn (a b) (+ a b)))'))
-    it('named function 1', function() { check(evaluate(parse('(add2 y 5)')), 8) })
-    evaluate(parse('(def test (fn (a b) (if (< a b) b a)))'))
-    it('named function 2', function() { check(evaluate(parse('(test 10 30)')), 30) })
-    it('named function 3', function() { check(evaluate(parse('(test 43 30)')), 43) })
+  it('lambda function', function() { check(evaluate(parse('((fn (a b) (+ a b)) 1 2)')), 3) })
+  it('define var', function() { check(evaluate(parse('(def y 3)')), 3) })
+  evaluate(parse('(def add2 (fn (a b) (+ a b)))'))
+  it('named function 1', function() { check(evaluate(parse('(add2 y 5)')), 8) })
+  evaluate(parse('(def test (fn (a b) (if (< a b) b a)))'))
+  it('named function 2', function() { check(evaluate(parse('(test 10 30)')), 30) })
+  it('named function 3', function() { check(evaluate(parse('(test 43 30)')), 43) })
 
-    evaluate(parse(`(def fib (fn (n)
+  evaluate(parse(`(def fib (fn (n)
                       (if (< n 2)
                           n
                           (+ (fib (- n 1))
                              (fib (- n 2))))))`))
 
-    it('fibinicci 10', function() { check(evaluate(parse('(fib 10)')), 55) })
-    it('fibinicci 30', function() { check(evaluate(parse('(fib 30)')), 832040) })
+  it('fibinicci 10', function() { check(evaluate(parse('(fib 10)')), 55) })
+  it('fibinicci 30', function() { check(evaluate(parse('(fib 30)')), 832040) })
 
-    evaluate(parse(`(def test_fn (fn (n) (fn () (set n (- n 1)) n)))`))
-    evaluate(parse(`(def t1 (test_fn 5))`))
-    it('nested function', function() { check(evaluate(parse('(+ (t1) (t1))')), 7) })
+  evaluate(parse(`(def test_fn (fn (n) (fn () (set n (- n 1)) n)))`))
+  evaluate(parse(`(def t1 (test_fn 5))`))
+  it('nested function', function() { check(evaluate(parse('(+ (t1) (t1))')), 7) })
 
-    evaluate(parse(`
+  evaluate(parse(`
     (def test2_fn
       (fn ()
         (def x (fn () 5))
         (def y (x))
         (set y (+ y 1))
         y))`))
-    it('def/set in function', function() { check(evaluate(parse('(test2_fn)')), 6) })
+  it('def/set in function', function() { check(evaluate(parse('(test2_fn)')), 6) })
+
+  it('car', function() { check(evaluate(parse('(car (cons 1 2))')), 1) })
+  it('cdr', function() { check(evaluate(parse('(cdr (cons 1 2))')), 2) })
+  it('car cdr', function() { check(evaluate(parse('(car (cdr (cons 0 (cons 1 2))))')), 1) })
 })
