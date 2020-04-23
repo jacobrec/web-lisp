@@ -6,16 +6,16 @@ let is_def = (atom) => atom.type === "exp" && atom.value[0].value === "def" && a
 
 export function evaluate(atom) {
   // jsprint(get_scope())
-  print(atom)
+  // print(atom)
   if (is_def(atom)) {
-    console.log(`    get_scope()['${atom.value[1].value}'] = jeval("${compile_tl(atom.value[2])}")`)
+    // console.log(`    get_scope()['${atom.value[1].value}'] = jeval("${compile_tl(atom.value[2])}")`)
 
     let val = jeval(compile_tl(atom.value[2]))
     get_scope()[atom.value[1].value] = val
     // print(atom)
     return val
   } else {
-    console.log(`    eval("${compile_tl(atom)}")`)
+    // console.log(`    eval("${compile_tl(atom)}")`)
     return jeval(compile_tl(atom))
   }
 }

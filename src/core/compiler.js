@@ -93,7 +93,6 @@ function compile_binop(op, args, compile_data) {
   return compiled
 }
 function symbol_scope_resolution(name, locals) {
-  console.log(`lookup [${name}] in ${JSON.stringify(locals)}`)
   if (locals[name]) {
     return name
   } else if (!locals[LOCAL_NEXT]) {
