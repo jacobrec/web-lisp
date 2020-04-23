@@ -1,4 +1,5 @@
 import { compile } from './compiler.js'
+import { stringify } from './printer.js'
 
 var scope = typeof global !== 'undefined' ?
              global :
@@ -13,6 +14,7 @@ function lambda(args) {
   let body_stmts = args.slice(1).map(compile)
   body_stmts[body_stmts.length - 1] = 'return ' + body_stmts[body_stmts.length - 1]
   let fn_args = (args[0].value || []).map(evaluate).concat([`"use strict"; ${body_stmts.join(';')}`])
+  // console.log(`compiled function to ${body_stmts}`)
   return Function.apply(null, fn_args).bind(scope)
 }
 function if_expr(args) {
@@ -27,12 +29,16 @@ function set(args) {
   // TODO: asserts for valid forms
   return scope[evaluate(args[0])] = evaluate(args[1])
 }
+function quote(args) {
+  return `${stringify(args[0])}`
+}
 
 let forms = {
   if: if_expr,
   fn: lambda,
   def,
   set,
+  quote,
 }
 
 export function evaluate(atom) {

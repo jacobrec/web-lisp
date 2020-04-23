@@ -1,3 +1,5 @@
+import { stringify } from './printer.js'
+
 function lambda(args) {
   // TODO: asserts for valid forms
   return `(${(args[0].value || []).join(',')}) => (${compile(args[1])})`
@@ -14,12 +16,16 @@ function set(args) {
   // TODO: asserts for valid forms
   return `${compile(args[0])} = (${compile(args[1])})`
 }
+function quote(args) {
+  return `"${stringify(args[0])}"`
+}
 
 let forms = {
   if: if_expr,
   def,
   set,
   fn: lambda,
+  quote,
 }
 
 export function compile(atom) {
