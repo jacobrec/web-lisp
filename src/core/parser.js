@@ -15,6 +15,14 @@ import {
   parse_string_lit,
 } from "../parser_combinator.js"
 
+import {
+  atom_bool,
+  atom_number,
+  atom_sexp,
+  atom_string,
+  atom_symbol,
+} from "./atom.js"
+
 
 let parse_atom = parse_atom_fn()
 let parse_sexp = parse_sexp_fn()
@@ -42,13 +50,13 @@ let parse_identifier = parse_until(parse_or(parse_white, parse_lit(")"), parse_l
 // }
 function parse_atom_fn() {
   let parse_data = (str) => parse_or(
-    parse_apply(r => ({type:"num", value: r}), parse_float),
-    parse_apply(r => ({type:"num", value: r}), parse_int),
-    parse_apply(r => ({type:"str", value: r}), parse_string_lit('"')),
-    parse_apply(r => ({type:"bol", value: true}), parse_lit("true")),
-    parse_apply(r => ({type:"bol", value: false}), parse_lit("false")),
-    parse_apply(r => ({type:"sym", value: r}), parse_identifier),
-    parse_apply(r => ({type:"exp", value: r}), parse_sexp_fn()),
+    parse_apply(atom_number, parse_float),
+    parse_apply(atom_number, parse_int),
+    parse_apply(atom_string, parse_string_lit('"')),
+    parse_apply(_e => atom_bool(true), parse_lit("true")),
+    parse_apply(_e => atom_bool(false), parse_lit("false")),
+    parse_apply(atom_symbol, parse_identifier),
+    parse_apply(atom_sexp, parse_sexp_fn()),
   )(str)
 
   return parse_ignore_leading_white(parse_data)

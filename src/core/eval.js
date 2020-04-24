@@ -1,21 +1,26 @@
-import { compile_tl } from './compiler.js'
+import { compile_tl, symbol_to_string } from './compiler.js'
 import { jsprint, print } from './printer.js'
 import { get_scope } from './runtime.js'
 
-let is_def = (atom) => atom.type === "exp" && atom.value[0].value === "def" && atom.value[0].type === "sym"
+import {
+  atom_is_sexp,
+  atom_is_symbol,
+} from './atom.js'
+
+let is_def = (atom) => atom_is_sexp(atom) && atom_is_symbol(atom[0]) && atom[0] === Symbol.for("def")
 
 export function evaluate(atom) {
   // jsprint(get_scope())
-  // print(atom)
+  print(atom)
   if (is_def(atom)) {
-    // console.log(`    get_scope()['${atom.value[1].value}'] = jeval("${compile_tl(atom.value[2])}")`)
+    console.log(`    get_scope()[${symbol_to_string(atom[1])}] = jeval(${JSON.stringify(compile_tl(atom[2]))})`)
 
-    let val = jeval(compile_tl(atom.value[2]))
-    get_scope()[atom.value[1].value] = val
+    let val = jeval(compile_tl(atom[2]))
+    get_scope()[symbol_to_string(atom[1])] = val
     // print(atom)
     return val
   } else {
-    // console.log(`    eval("${compile_tl(atom)}")`)
+    console.log(`    eval(${JSON.stringify(compile_tl(atom))})`)
     return jeval(compile_tl(atom))
   }
 }
