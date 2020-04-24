@@ -104,6 +104,8 @@ describe('js-runtime', function() {
 
   it('lists7', function() { check(array_from_list(cons(1, cons(2, cons(3, null)))), [1, 2, 3]) })
   it('lists8', function() { check(list_from_array([1, 2, 3]), cons(1, cons(2, cons(3, null)))) })
+  it('lists9', function() { check(list_from_array([]), null) })
+  it('lists10', function() { check(array_from_list(null), []) })
 
 })
 
