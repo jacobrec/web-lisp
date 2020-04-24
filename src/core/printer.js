@@ -1,6 +1,12 @@
 import util from 'util'
 
 import {
+  array_from_list,
+  list_from_array,
+  map,
+} from './runtime.js'
+
+import {
   atom_type_of,
 } from './atom.js'
 
@@ -12,9 +18,10 @@ export function stringify(atom) {
   switch (atom_type_of(atom)) {
   case "string": return `"${atom}"`
   case "number": return `${atom}`
-  case "symbol": return `${atom.toString().slice(7, -1)}`
+  case "symbol": return `${atom.description}`
   case "bool":   return `${atom}`
-  case "sexp":   return `(${(atom||[]).map(stringify).join(' ')})`
+  case "sexp":   { let s = ""; map(atom, e => s += " " + stringify(e)); return `(${s.substr(1)})` }
+  case "array":  return `[${atom.map(stringify).join(' ')}]`
   case "nil":    return "nil"
   }
   throw `unknown type to print: <${JSON.stringify(atom)}>`

@@ -1,6 +1,6 @@
 import { compile_tl, symbol_to_string } from './compiler.js'
-import { jsprint, print } from './printer.js'
-import { get_scope } from './runtime.js'
+import { jsprint, print, stringify } from './printer.js'
+import { get_scope, array_from_list } from './runtime.js'
 
 import {
   atom_is_sexp,
@@ -11,16 +11,18 @@ let is_def = (atom) => atom_is_sexp(atom) && atom_is_symbol(atom[0]) && atom[0] 
 
 export function evaluate(atom) {
   // jsprint(get_scope())
-  print(atom)
+  // print(atom)
   if (is_def(atom)) {
-    console.log(`    get_scope()[${symbol_to_string(atom[1])}] = jeval(${JSON.stringify(compile_tl(atom[2]))})`)
+    atom = array_from_list(atom)
+    // console.log(`    var: ${symbol_to_string(atom[1])}    val: ${stringify(atom[2])}`)
+    // console.log(`    get_scope()[${symbol_to_string(atom[1])}] = jeval(${JSON.stringify(compile_tl(atom[2]))})`)
 
     let val = jeval(compile_tl(atom[2]))
     get_scope()[symbol_to_string(atom[1])] = val
     // print(atom)
     return val
   } else {
-    console.log(`    eval(${JSON.stringify(compile_tl(atom))})`)
+    // console.log(`    eval(${JSON.stringify(compile_tl(atom))})`)
     return jeval(compile_tl(atom))
   }
 }

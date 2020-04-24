@@ -1,3 +1,6 @@
+import {
+  list_from_array,
+} from './runtime.js'
 export function atom_symbol(str) {
   return Symbol.for(str)
 }
@@ -7,7 +10,10 @@ export function atom_string(str) {
 }
 
 export function atom_sexp(exp) {
-  // TODO: convert array to linked list?
+  return list_from_array(exp || [])
+}
+
+export function atom_array(exp) {
   return exp
 }
 
@@ -27,17 +33,20 @@ export function atom_type_of(atom) {
     return "symbol"
   } else if (atom_is_sexp(atom)) {
     return "sexp"
+  } else if (atom_is_array(atom)) {
+    return "array"
   } else if (atom_is_number(atom)) {
     return "number"
   } else if (atom_is_nil(atom)) {
     return "nil"
   }
-  throw `unknown atom type: <${JSON.stringify(atom)}>`
+  throw Error(`unknown atom type: <${JSON.stringify(atom)}>`)
 }
 
 export let atom_is_string = (atom) => typeof atom === "string"
 export let atom_is_bool = (atom) => typeof atom === "boolean"
 export let atom_is_symbol = (atom) => typeof atom === "symbol"
 export let atom_is_number = (atom) => typeof atom === "number"
-export let atom_is_sexp = (atom) => typeof atom === "object" && Array.isArray(atom)
+export let atom_is_sexp = (atom) => typeof atom === "object" && Array.isArray(atom) && atom.type === "list"
+export let atom_is_array = (atom) => typeof atom === "object" && Array.isArray(atom) && atom.type === undefined
 export let atom_is_nil = (atom) => typeof atom === "object" && atom === null
