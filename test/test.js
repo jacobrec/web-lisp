@@ -91,6 +91,25 @@ describe('parse', function() {
   })
 })
 
+
+import { car, cons, cdr } from '../src/core/runtime.js'
+import { array_from_list, list_from_array } from '../src/core/runtime.js'
+describe('js-runtime', function() {
+  it('lists1', function() { check(car(cons(1, 2)), 1) })
+  it('lists2', function() { check(cdr(cons(1, 2)), 2) })
+  it('lists3', function() { check(car(cons(1, cons(2, cons(3, null)))), 1) })
+  it('lists4', function() { check(car(cdr(cons(1, cons(2, cons(3, null))))), 2) })
+  it('lists5', function() { check(car(cdr(cdr(cons(1, cons(2, cons(3, null)))))), 3) })
+  it('lists6', function() { check(car(cdr(cdr(cdr(cons(1, cons(2, cons(3, null))))))), null) })
+
+  it('lists7', function() { check(array_from_list(cons(1, cons(2, cons(3, null)))), [1, 2, 3]) })
+  it('lists8', function() { check(list_from_array([1, 2, 3]), cons(1, cons(2, cons(3, null)))) })
+
+})
+
+/*
+
+
 import { evaluate } from '../src/core/eval.js'
 import { compile_tl } from '../src/core/compiler.js'
 import { parse } from '../src/core/parser.js'
@@ -143,3 +162,5 @@ describe('end-to-end', function() {
   it('quote', function() { check(evaluate(parse('(quote (cons 1 2))')), "(cons 1 2)") })
   it('quote compiled', function() { check(evaluate(parse('((fn () (quote (cons 1 2))))')), "(cons 1 2)") })
 })
+
+*/
