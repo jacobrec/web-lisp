@@ -109,7 +109,6 @@ describe('js-runtime', function() {
 
 })
 
-/*
 
 
 import { evaluate } from '../src/core/eval.js'
@@ -164,5 +163,3 @@ describe('end-to-end', function() {
   it('quote', function() { check(evaluate(parse('(quote (cons 1 2))')), "(cons 1 2)") })
   it('quote compiled', function() { check(evaluate(parse('((fn () (quote (cons 1 2))))')), "(cons 1 2)") })
 })
-
-*/
