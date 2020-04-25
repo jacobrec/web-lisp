@@ -20,7 +20,7 @@ export function stringify(atom) {
   case "number": return `${atom}`
   case "symbol": return `${atom.description}`
   case "bool":   return `${atom}`
-  case "sexp":   return `(${array_from_list(atom).map(stringify).join(' ')})`
+  case "list":   return `(${array_from_list(atom).map(stringify).join(' ')})`
   case "array":  return `[${atom.map(stringify).join(' ')}]`
   case "nil":    return "nil"
   }

@@ -164,5 +164,12 @@ describe('end-to-end', function() {
 
   it('quote', function() { check(evaluate(parse('(quote (1 2))')), cons(1, cons(2, null))) })
   it('quote compiled', function() { check(evaluate(parse('((fn () (quote (1 2))))')), cons(1, cons(2, null))) })
-  it('quote', function() { check(evaluate(parse('(car (quote (1 2 3)))')), 1) })
+  it('quote car', function() { check(evaluate(parse('(car (quote (1 2 3)))')), 1) })
+  it('type quote sym', function() { check(evaluate(parse('(type (quote hi))')), "symbol") })
+  it('type str', function() { check(evaluate(parse('(type "hello")')), "string") })
+  it('type num', function() { check(evaluate(parse('(type 503.3)')), "number") })
+  it('type bool', function() { check(evaluate(parse('(type false)')), "bool") })
+  // TODO: implement arrays
+  // it('type array', function() { check(evaluate(parse('(type [1 2 3])')), "array") })
+  it('type quote list', function() { check(evaluate(parse('(type (quote (1 2 3)))')), "list") })
 })

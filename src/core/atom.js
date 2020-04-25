@@ -41,7 +41,7 @@ export function atom_type_of(atom) {
   } else if (atom_is_symbol(atom)) {
     return "symbol"
   } else if (atom_is_sexp(atom)) {
-    return "sexp"
+    return "list"
   } else if (atom_is_array(atom)) {
     return "array"
   } else if (atom_is_number(atom)) {

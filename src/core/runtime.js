@@ -2,6 +2,7 @@ const scoper = 'jlisp_global'
 
 import { evaluate } from'./eval.js'
 import { parse } from'./parser.js'
+import { atom_type_of } from'./atom.js'
 
 export function get_global() {
   return typeof global !== 'undefined' ?
@@ -40,6 +41,8 @@ export function init_runtime() {
 
   scope["parse"] = parse
   scope["evaluate"] = evaluate
+
+  scope["type"] = atom_type_of
 }
 
 function cons_cell(car, cdr) {

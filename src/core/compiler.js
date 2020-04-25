@@ -58,6 +58,7 @@ function set(args, compile_data) {
 function quote(args, compile_data) {
   // TODO: finish this
   return `this['parse']('${stringify(car(args))}')`
+  // return `${JSON.stringify(car(args))}`
 }
 
 let forms = {
@@ -81,7 +82,7 @@ function compile(atom, compile_data) {
   case "number": return `${atom}`
   case "symbol": return `${symbol_data(atom)}`// symbol_scope_resolution(atom, compile_data.locals)
   case "bool":   return `${atom}`
-  case "sexp":   return compile_expr(atom, compile_data)
+  case "list":   return compile_expr(atom, compile_data)
   }
   throw Error(`unknown type to compile: <${JSON.stringify(atom)}>`)
 }
