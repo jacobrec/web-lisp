@@ -1,5 +1,8 @@
 const scoper = 'jlisp_global'
 
+import { evaluate } from'./eval.js'
+import { parse } from'./parser.js'
+
 export function get_global() {
   return typeof global !== 'undefined' ?
     global :
@@ -34,6 +37,9 @@ export function init_runtime() {
   scope["car"] = car
   scope["cdr"] = cdr
   scope["cons"] = cons
+
+  scope["parse"] = parse
+  scope["evaluate"] = evaluate
 }
 
 function cons_cell(car, cdr) {

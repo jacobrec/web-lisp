@@ -162,6 +162,7 @@ describe('end-to-end', function() {
   it('cdr', function() { check(evaluate(parse('(cdr (cons 1 2))')), 2) })
   it('car cdr', function() { check(evaluate(parse('(car (cdr (cons 0 (cons 1 2))))')), 1) })
 
-  it('quote', function() { check(evaluate(parse('(quote (cons 1 2))')), cons(1, 2)) })
-  it('quote compiled', function() { check(evaluate(parse('((fn () (quote (cons 1 2))))')), cons(1, 2)) })
+  it('quote', function() { check(evaluate(parse('(quote (1 2))')), cons(1, cons(2, null))) })
+  it('quote compiled', function() { check(evaluate(parse('((fn () (quote (1 2))))')), cons(1, cons(2, null))) })
+  it('quote', function() { check(evaluate(parse('(car (quote (1 2 3)))')), 1) })
 })

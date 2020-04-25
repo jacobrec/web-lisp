@@ -3,6 +3,7 @@ import { print, jsprint, stringify } from './printer.js'
 import {
   atom_type_of,
   atom_is_symbol,
+  symbol_data,
 } from './atom.js'
 
 import {
@@ -23,7 +24,7 @@ function lambda(args, compile_data) {
   compile_data.locals = { [LOCAL_NEXT]: compile_data.locals }
   let local_args = array_from_list(car(args))
   for (let l of local_args) {
-    compile_data.locals[l] = true
+    compile_data.locals[symbol_data(l)] = true
   }
   let body_stmts = array_from_list(map(cdr(args), e => compile(e, compile_data)))
   body_stmts[body_stmts.length - 1] = 'return ' + body_stmts[body_stmts.length - 1]
@@ -42,7 +43,7 @@ function def(args, compile_data) {
   if (compile_data.is_top) {
     return `this[${name}] = (${compile(nth(args, 1), compile_data)})`
   } else {
-    compile_data.locals[car(args)] = true
+    compile_data.locals[symbol_data(car(args))] = true
     return `let ${name} = (${compile(nth(args, 1), compile_data)})`
   }
 }
@@ -56,7 +57,7 @@ function set(args, compile_data) {
 }
 function quote(args, compile_data) {
   // TODO: finish this
-  return `"${car(args)}"`
+  return `this['parse']('${stringify(car(args))}')`
 }
 
 let forms = {
@@ -78,7 +79,7 @@ function compile(atom, compile_data) {
   switch (atom_type_of(atom)) {
   case "string": return `"${atom}"`
   case "number": return `${atom}`
-  case "symbol": return `${atom.description}`// symbol_scope_resolution(atom, compile_data.locals)
+  case "symbol": return `${symbol_data(atom)}`// symbol_scope_resolution(atom, compile_data.locals)
   case "bool":   return `${atom}`
   case "sexp":   return compile_expr(atom, compile_data)
   }
@@ -110,8 +111,8 @@ function compile_binop(op, args, compile_data) {
 }
 
 function symbol_scope_resolution(name, locals) {
-  // console.log(`Looking up ${name.toString()} in ${JSON.stringify(locals)}`)
-  if (locals[name]) {
+  // console.log(`Looking up ${JSON.stringify(name)} in ${JSON.stringify(locals)}`)
+  if (locals[symbol_data(name)]) {
     return compile(name)
   } else if (!locals[LOCAL_NEXT]) {
     return `this['${compile(name)}']`
