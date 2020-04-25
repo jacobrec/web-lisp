@@ -36,16 +36,22 @@ export function init_runtime() {
   scope["cons"] = cons
 }
 
+function cons_cell(car, cdr) {
+  this.car = car
+  this.cdr = cdr
+  this.type = "list"
+}
 export function cons (car, cdr) {
-  let l = [car, cdr]
-  l.type = "list"
-  return l
+  return new cons_cell(car, cdr)
 }
 export function car (cell) {
-  return !cell ? null : cell[0]
+  return !cell ? null : cell.car
 }
 export function cdr (cell) {
-  return !cell ? null : cell[1]
+  return !cell ? null : cell.cdr
+}
+export function is_list (cell) {
+  return cell && cell.hasOwnProperty('car') && cell.hasOwnProperty('cdr')
 }
 
 export function nth (cell, n) {
@@ -63,4 +69,3 @@ export function array_from_list(list) {
   map(list, e => a.push(e))
   return a
 }
-

@@ -1,24 +1,25 @@
-import { compile_tl, symbol_to_string } from './compiler.js'
+import { compile_tl } from './compiler.js'
 import { jsprint, print, stringify } from './printer.js'
-import { get_scope, array_from_list } from './runtime.js'
+import { get_scope, array_from_list, car } from './runtime.js'
 
 import {
   atom_is_sexp,
   atom_is_symbol,
 } from './atom.js'
 
-let is_def = (atom) => atom_is_sexp(atom) && atom_is_symbol(atom[0]) && atom[0] === Symbol.for("def")
+let is_def = (atom) => atom_is_sexp(atom) && atom_is_symbol(car(atom)) && car(atom) === Symbol.for("def")
 
 export function evaluate(atom) {
-  // jsprint(get_scope())
-  // print(atom)
+  // jsprint(atom)
+  print(atom)
+
   if (is_def(atom)) {
     atom = array_from_list(atom)
     // console.log(`    var: ${symbol_to_string(atom[1])}    val: ${stringify(atom[2])}`)
     // console.log(`    get_scope()[${symbol_to_string(atom[1])}] = jeval(${JSON.stringify(compile_tl(atom[2]))})`)
 
     let val = jeval(compile_tl(atom[2]))
-    get_scope()[symbol_to_string(atom[1])] = val
+    get_scope()[compile_tl(atom[1])] = val
     // print(atom)
     return val
   } else {

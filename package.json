@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "mocha --experimental-modules",
-    "start": "node --experimental-modules main.js"
+    "start": "rlwrap node --experimental-modules --trace-uncaught main.js"
   },
   "author": "",
   "license": "MIT",
