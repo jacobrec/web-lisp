@@ -11,6 +11,7 @@ import {
 let is_def = (atom) => atom_is_sexp(atom) && atom_is_symbol(car(atom)) && symbol_data(car(atom)) === "def"
 
 export function evaluate(atom) {
+  // jsprint(get_scope())
   // jsprint(atom)
   // print(atom)
 

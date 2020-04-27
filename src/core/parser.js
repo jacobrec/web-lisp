@@ -22,6 +22,7 @@ import {
   atom_array,
   atom_string,
   atom_symbol,
+  atom_nil,
 } from "./atom.js"
 
 
@@ -62,6 +63,7 @@ function parse_atom_fn() {
     parse_apply(atom_number, parse_float),
     parse_apply(atom_number, parse_int),
     parse_apply(atom_string, parse_string_lit('"')),
+    parse_apply(atom_nil, parse_lit("nil")),
     parse_apply(_e => atom_bool(true), parse_lit("true")),
     parse_apply(_e => atom_bool(false), parse_lit("false")),
     parse_apply(atom_symbol, parse_identifier),

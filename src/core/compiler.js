@@ -17,6 +17,17 @@ import {
 
 let LOCAL_NEXT = Symbol("variable_scope")
 
+let forms = {
+  if: if_expr,
+  def,
+  set,
+  fn: lambda,
+  quote,
+  quaziquote, // also unquote
+}
+
+let builtins = ["+", "-", "*", "/", "<", ">", "<=", ">=", "="]
+
 function lambda(args, compile_data) {
   // TODO: asserts for valid forms
   // jsprint(args)
@@ -60,14 +71,17 @@ function set(args, compile_data) {
 
 function quote(args, compile_data) {
   let item = car(args)
-  return `this['parse']('${stringify(item)}')`
+  return `this['__lits'][${create_literal(item)}]`
 }
 function quaziquote(args, compile_data) {
+  return quote(args, compile_data)
   let oitem = car(args)
   let quazi_inner = (item) => {
     if (atom_type_of(item) == "list") {
       if (atom_type_of(car(item)) == "symbol" && symbol_data(car(item)) == "unquote") {
-        return "${this['evaluate'](" + quaziquote(cdr(item), compile_data)+ ")}"
+        return "${this['stringify'](this['evaluate'](" + quaziquote(cdr(item), compile_data)+ "))}"
+      } else if (atom_type_of(car(item)) == "symbol" && symbol_data(car(item)) == "unquote-splice") {
+        return "${this['stringify'](this['evaluate'](" + quaziquote(cdr(item), compile_data)+ "))}"
       } else {
         let qargs = map(item, quazi_inner)
         return `(${array_from_list(qargs).join(' ')})`
@@ -77,33 +91,41 @@ function quaziquote(args, compile_data) {
       return 'TODO'
     } else if (atom_type_of(item) == "symbol") {
       let x = symbol_data(item)
-      return in_global_scope(item, compile_data) && !builtins.includes(symbol_data(item))? `this.${x}` : symbol_data(item)
+      return in_global_scope(item, compile_data) && !forms[symbol_data(item)] && !builtins.includes(symbol_data(item))? `this.${x}` : symbol_data(item)
     } else {
       return stringify(item)
     }
   }
   let res = `this['parse'](\`${quazi_inner(oitem)}\`)`
-  // console.log("quaziJS=", res)
+  console.log("quaziJS=", res)
   // (quaziquote (1 2 3)) => this['parse']('(1 2 3)')
   // (quaziquote (1 2 x)) => this['parse']('(1 2 x)')
   // (quaziquote (1 2 (unquote x))) => this['parse']('(1 2 ${this['evaluate'](this['parse']('x')})')
   // (quaziquote (1 2 (unquote (+ 1 2)))) => this['parse']('(1 2 ${this['evaluate'](this['parse']('(+ 1 2)')})')
+  // (quaziquote (0 (unquote (quote (1 2 3))))) => this['parse'](`(0 ${this['stringify'](this['evaluate'](this['parse'](`(quote (1 2 3))`)))})`)
+  // (quaziquote (0 (unquote-splice (quote (1 2 3))))) => this['parse'](`(0 ${this['stringify'](this['evaluate'](this['parse'](`(quote (1 2 3))`)))})`)
   return res
 }
 
-let forms = {
-  if: if_expr,
-  def,
-  set,
-  fn: lambda,
-  quote,
-  quaziquote, // also unquote
+let litmap = {}
+let lits = []
+function create_literal(item) {
+  let sitem = stringify(item)
+  if (litmap[sitem] !== undefined) {
+    return litmap[sitem]
+  }
+  let num = lits.length
+  lits.push(item)
+  litmap[sitem] = num
+  return num
 }
 
-let builtins = ["+", "-", "*", "/", "<", ">", "<=", ">=", "="]
+export function init_compiler(scope) {
+  scope.__lits = lits
+}
 
-let compile_data = {}
 export function compile_tl(atom) {
+  let compile_data = {}
   compile_data.is_top = true
   compile_data.locals = {}
   return compile(atom, compile_data)
@@ -113,6 +135,7 @@ function compile(atom, compile_data) {
   switch (atom_type_of(atom)) {
   case "string": return `"${atom}"`
   case "number": return `${atom}`
+  case "nil":    return `null`// symbol_scope_resolution(atom, compile_data.locals)
   case "symbol": return `${symbol_data(atom)}`// symbol_scope_resolution(atom, compile_data.locals)
   case "bool":   return `${atom}`
   case "list":   return compile_expr(atom, compile_data)

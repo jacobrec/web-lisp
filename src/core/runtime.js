@@ -1,8 +1,10 @@
 const scoper = 'jlisp_global'
 
+import { stringify } from'./printer.js'
 import { evaluate } from'./eval.js'
 import { parse } from'./parser.js'
 import { atom_type_of } from'./atom.js'
+import { init_compiler } from'./compiler.js'
 
 export function get_global() {
   return typeof global !== 'undefined' ?
@@ -20,6 +22,7 @@ export function get_scope() {
 export function init_runtime() {
   get_global()[scoper] = {}
   let scope = get_scope()
+  init_compiler(scope)
 
   scope["-"] = function () {
     let val = Array.from(arguments).reduce((a,b) => a-b)
@@ -43,6 +46,8 @@ export function init_runtime() {
   scope["evaluate"] = evaluate
 
   scope["type"] = atom_type_of
+
+  scope["stringify"] = stringify
 }
 
 function cons_cell(car, cdr) {
