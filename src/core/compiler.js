@@ -8,6 +8,7 @@ import {
 
 import {
   map,
+  cons,
   car,
   cdr,
   nth,
@@ -37,6 +38,7 @@ function if_expr(args, compile_data) {
   // TODO: asserts for valid forms
   return `(${compile(car(args), compile_data)}) ? (${compile(nth(args, 1), compile_data)}) : (${compile(nth(args, 2), compile_data)})`
 }
+
 function def(args, compile_data) {
   // TODO: asserts for valid forms
   let name = compile(car(args))
@@ -55,10 +57,38 @@ function set(args, compile_data) {
   }
   return `${loc} = (${compile(nth(args, 1), compile_data)})`
 }
+
 function quote(args, compile_data) {
-  // TODO: finish this
-  return `this['parse']('${stringify(car(args))}')`
-  // return `${JSON.stringify(car(args))}`
+  let item = car(args)
+  return `this['parse']('${stringify(item)}')`
+}
+function quaziquote(args, compile_data) {
+  let oitem = car(args)
+  let quazi_inner = (item) => {
+    if (atom_type_of(item) == "list") {
+      if (atom_type_of(car(item)) == "symbol" && symbol_data(car(item)) == "unquote") {
+        return "${this['evaluate'](" + quaziquote(cdr(item), compile_data)+ ")}"
+      } else {
+        let qargs = map(item, quazi_inner)
+        return `(${array_from_list(qargs).join(' ')})`
+      }
+    } else if (atom_type_of(item) == "array") {
+      throw 'Quaziquote not implemented for arrays yet'
+      return 'TODO'
+    } else if (atom_type_of(item) == "symbol") {
+      let x = symbol_data(item)
+      return in_global_scope(item, compile_data) && !builtins.includes(symbol_data(item))? `this.${x}` : symbol_data(item)
+    } else {
+      return stringify(item)
+    }
+  }
+  let res = `this['parse'](\`${quazi_inner(oitem)}\`)`
+  // console.log("quaziJS=", res)
+  // (quaziquote (1 2 3)) => this['parse']('(1 2 3)')
+  // (quaziquote (1 2 x)) => this['parse']('(1 2 x)')
+  // (quaziquote (1 2 (unquote x))) => this['parse']('(1 2 ${this['evaluate'](this['parse']('x')})')
+  // (quaziquote (1 2 (unquote (+ 1 2)))) => this['parse']('(1 2 ${this['evaluate'](this['parse']('(+ 1 2)')})')
+  return res
 }
 
 let forms = {
@@ -67,7 +97,10 @@ let forms = {
   set,
   fn: lambda,
   quote,
+  quaziquote, // also unquote
 }
+
+let builtins = ["+", "-", "*", "/", "<", ">", "<=", ">=", "="]
 
 let compile_data = {}
 export function compile_tl(atom) {
@@ -93,14 +126,13 @@ function compile_array(atom, compile_data) {
   return `[${expr.join(',')}]`
 }
 
-
 function compile_expr(lexpr, compile_data) {
   let expr = array_from_list(lexpr)
   let sym = expr[0]
   let args = expr.slice(1)
   if (atom_is_symbol(sym) && forms[compile(sym)]) {
     return forms[compile(sym)](cdr(lexpr), compile_data)
-  } else if (atom_is_symbol(sym) && ["+", "-", "*", "/", "<", ">", "<=", ">=", "="].includes(compile(sym))) {
+  } else if (atom_is_symbol(sym) && builtins.includes(compile(sym))) {
     return compile_binop(compile(sym), args, compile_data)
   }
   let fn = scope_symbol(sym, compile_data)
@@ -122,13 +154,21 @@ function scope_symbol(atom, compile_data){
   return compile(atom, compile_data)
 }
 
+function in_global_scope(name, locals) {
+  if (locals[symbol_data(name)]) {
+    return false
+  } else if (!locals[LOCAL_NEXT]) {
+    return true
+  } else {
+    return in_global_scope(name, locals[LOCAL_NEXT])
+  }
+}
+
 function symbol_scope_resolution(name, locals) {
   // console.log(`Looking up ${JSON.stringify(name)} in ${JSON.stringify(locals)}`)
-  if (locals[symbol_data(name)]) {
-    return compile(name)
-  } else if (!locals[LOCAL_NEXT]) {
+  if (in_global_scope(name, locals)) {
     return `this['${compile(name)}']`
   } else {
-    return symbol_scope_resolution(name, locals[LOCAL_NEXT])
+    return compile(name)
   }
 }

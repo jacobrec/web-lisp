@@ -171,4 +171,10 @@ describe('end-to-end', function() {
   it('type bool', function() { check(evaluate(parse('(type false)')), "bool") })
   it('type array', function() { check(evaluate(parse('(type [1 2 3])')), "array") })
   it('type quote list', function() { check(evaluate(parse('(type (quote (1 2 3)))')), "list") })
+
+  evaluate(parse('(def x 5)'))
+  it('quaziquote regular', function() { check(evaluate(parse('(quaziquote (5 5))')), cons(5, cons(5, null))) })
+  it('quaziquote with var', function() { check(evaluate(parse('(quaziquote ((unquote x) 5))')), cons(5, cons(5, null))) })
+  it('quaziquote with sexp', function() { check(evaluate(parse('(quaziquote ((unquote (+ 1 2)) 5))')), cons(3, cons(5, null))) })
+
 })
