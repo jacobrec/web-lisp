@@ -58,6 +58,17 @@ function cons_cell(car, cdr) {
 export function cons (car, cdr) {
   return new cons_cell(car, cdr)
 }
+export function concat(l1, l2) {
+  let cell = l1
+  while (cell !== null) {
+    if (cell.cdr === null) {
+      cell.cdr = l2
+      break
+    }
+    cell = cell.cdr
+  }
+  return l1
+}
 export function car (cell) {
   return !cell ? null : cell.car
 }

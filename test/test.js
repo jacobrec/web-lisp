@@ -92,7 +92,7 @@ describe('parse', function() {
 })
 
 
-import { car, cons, cdr } from '../src/core/runtime.js'
+import { car, cons, cdr, concat } from '../src/core/runtime.js'
 import { array_from_list, list_from_array } from '../src/core/runtime.js'
 import { map } from '../src/core/runtime.js'
 describe('js-runtime', function() {
@@ -108,6 +108,9 @@ describe('js-runtime', function() {
   it('lists9', function() { check(list_from_array([]), null) })
   it('lists10', function() { check(array_from_list(null), []) })
   it('lists11', function() { check(map(cons(1, cons(2, cons(3, null))), e => e*e), list_from_array([1, 4, 9])) })
+
+  it('lists12', function() { check(concat(cons(1, null), cons(2, null)), list_from_array([1, 2])) })
+  it('lists13', function() { check(concat(cons(1, cons(2, cons(3, null))), cons(1, cons(2, cons(3, null)))), list_from_array([1, 2, 3, 1, 2, 3])) })
 
 })
 
@@ -181,6 +184,7 @@ describe('end-to-end', function() {
   it('quaziquote with sexp using special forms 2', function() { check(evaluate(parse('(quaziquote ((unquote (if false 1 2)) 5))')), cons(2, cons(5, null))) })
   it('quaziquote with unquoted quote', function() { check(evaluate(parse('(quaziquote (1 (unquote (quote (1 2 3)))))')), cons(1, cons(cons(1, cons(2, cons(3, null))), null))) })
   it('quaziquote with unquote-splice', function() { check(evaluate(parse('(quaziquote (0 (unquote-splice (quote (1 2 3)))))')), cons(0, cons(1, cons(2, cons(3, null))))) })
+  it('quaziquote with unquote-splice', function() { check(evaluate(parse('(quaziquote (1 2 (unquote-splice (quote (1 2 3))))))')), list_from_array([1, 2, 1, 2, 3])) })
 
 
 })

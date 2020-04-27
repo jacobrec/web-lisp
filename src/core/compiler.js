@@ -3,6 +3,7 @@ import { print, jsprint, stringify } from './printer.js'
 import {
   atom_type_of,
   atom_is_symbol,
+  atom_is_nil,
   symbol_data,
   symbol,
 } from './atom.js'
@@ -12,6 +13,7 @@ import {
   cons,
   car,
   cdr,
+  concat,
   is_list,
   nth,
   array_from_list,
@@ -28,6 +30,8 @@ let forms = {
   quaziquote, // also unquote
   ['quazi-eval']: quazi_eval,
 }
+let litmap = {}
+let lits = []
 
 let builtins = ["+", "-", "*", "/", "<", ">", "<=", ">=", "="]
 
@@ -84,7 +88,7 @@ function quaziquote(args, compile_data) {
         // console.log("unquote compiles to:", scope_symbol(car(cdr(item)), compile_data), compile_data)
         return scope_symbol(car(cdr(item)), compile_data)
       } else if (atom_type_of(car(item)) == "symbol" && symbol_data(car(item)) == "unquote-splice") {
-      throw 'Quaziquote not implemented for unquote-splice'
+        return cons(new symbol("unquote-splice"), scope_symbol(car(cdr(item)), compile_data))
       } else {
         return map(item, quazi_inner)
       }
@@ -95,7 +99,7 @@ function quaziquote(args, compile_data) {
     }
   }
   let res = `this['evaluate'](JSON.parse(\`${JSON.stringify(cons(new symbol("quazi-eval"), quazi_inner(oitem)), null, 4)}\`))`
-  // console.log("quaziJS=", res)
+  //console.log("quaziJS=", res)
   // `(1 2 ,x 4) => (`1 `2 3 `4)
   // (quaziquote (1 2 3)) => this['parse']('(1 2 3)')
   // (quaziquote (1 2 x)) => this['parse']('(1 2 x)')
@@ -108,12 +112,24 @@ function quaziquote(args, compile_data) {
 
 import { jeval } from './eval.js'
 function quazi_eval(args, compil_data) {
-  let data = is_list(args) ? map(args, jeval) : jeval(args)
-  return `JSON.parse(\`${JSON.stringify(data)}\`)`
+  let process = e => {
+    if (atom_is_nil(e)) {
+      return e
+    }
+    let h = car(e)
+    if (atom_type_of(h) === "list" && atom_type_of(car(h)) === "symbol" && symbol_data(car(h)) === "unquote-splice") {
+      return concat(jeval(cdr(h)), process(cdr(e)))
+    } else {
+      return cons(jeval(h), process(cdr(e)))
+    }
+  }
+  //console.log("args:", args)
+  let data = is_list(args) ? process(args) : jeval(args)
+  let res = `JSON.parse(\`${JSON.stringify(data)}\`)`
+  //console.log("quaziJSPOST=", res)
+  return res
 }
 
-let litmap = {}
-let lits = []
 function create_literal(item) {
   let sitem = stringify(item)
   if (litmap[sitem] !== undefined) {
