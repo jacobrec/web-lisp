@@ -4,6 +4,7 @@ import {
   atom_type_of,
   atom_is_symbol,
   symbol_data,
+  symbol,
 } from './atom.js'
 
 import {
@@ -11,6 +12,7 @@ import {
   cons,
   car,
   cdr,
+  is_list,
   nth,
   array_from_list,
 } from './runtime.js'
@@ -24,6 +26,7 @@ let forms = {
   fn: lambda,
   quote,
   quaziquote, // also unquote
+  ['quazi-eval']: quazi_eval,
 }
 
 let builtins = ["+", "-", "*", "/", "<", ">", "<=", ">=", "="]
@@ -74,30 +77,26 @@ function quote(args, compile_data) {
   return `this['__lits'][${create_literal(item)}]`
 }
 function quaziquote(args, compile_data) {
-  return quote(args, compile_data)
   let oitem = car(args)
   let quazi_inner = (item) => {
     if (atom_type_of(item) == "list") {
       if (atom_type_of(car(item)) == "symbol" && symbol_data(car(item)) == "unquote") {
-        return "${this['stringify'](this['evaluate'](" + quaziquote(cdr(item), compile_data)+ "))}"
+        // console.log("unquote compiles to:", scope_symbol(car(cdr(item)), compile_data), compile_data)
+        return scope_symbol(car(cdr(item)), compile_data)
       } else if (atom_type_of(car(item)) == "symbol" && symbol_data(car(item)) == "unquote-splice") {
-        return "${this['stringify'](this['evaluate'](" + quaziquote(cdr(item), compile_data)+ "))}"
+      throw 'Quaziquote not implemented for unquote-splice'
       } else {
-        let qargs = map(item, quazi_inner)
-        return `(${array_from_list(qargs).join(' ')})`
+        return map(item, quazi_inner)
       }
     } else if (atom_type_of(item) == "array") {
       throw 'Quaziquote not implemented for arrays yet'
-      return 'TODO'
-    } else if (atom_type_of(item) == "symbol") {
-      let x = symbol_data(item)
-      return in_global_scope(item, compile_data) && !forms[symbol_data(item)] && !builtins.includes(symbol_data(item))? `this.${x}` : symbol_data(item)
     } else {
-      return stringify(item)
+      return quote(cons(item, null), compile_data)
     }
   }
-  let res = `this['parse'](\`${quazi_inner(oitem)}\`)`
-  console.log("quaziJS=", res)
+  let res = `this['evaluate'](JSON.parse(\`${JSON.stringify(cons(new symbol("quazi-eval"), quazi_inner(oitem)), null, 4)}\`))`
+  // console.log("quaziJS=", res)
+  // `(1 2 ,x 4) => (`1 `2 3 `4)
   // (quaziquote (1 2 3)) => this['parse']('(1 2 3)')
   // (quaziquote (1 2 x)) => this['parse']('(1 2 x)')
   // (quaziquote (1 2 (unquote x))) => this['parse']('(1 2 ${this['evaluate'](this['parse']('x')})')
@@ -105,6 +104,12 @@ function quaziquote(args, compile_data) {
   // (quaziquote (0 (unquote (quote (1 2 3))))) => this['parse'](`(0 ${this['stringify'](this['evaluate'](this['parse'](`(quote (1 2 3))`)))})`)
   // (quaziquote (0 (unquote-splice (quote (1 2 3))))) => this['parse'](`(0 ${this['stringify'](this['evaluate'](this['parse'](`(quote (1 2 3))`)))})`)
   return res
+}
+
+import { jeval } from './eval.js'
+function quazi_eval(args, compil_data) {
+  let data = is_list(args) ? map(args, jeval) : jeval(args)
+  return `JSON.parse(\`${JSON.stringify(data)}\`)`
 }
 
 let litmap = {}
@@ -164,7 +169,7 @@ function compile_expr(lexpr, compile_data) {
 
 function compile_binop(op, args, compile_data) {
   if (args.length === 2) {
-    return `(${compile(args[0], compile_data)}) ${op} ${compile(args[1], compile_data)}`
+    return `((${compile(args[0], compile_data)}) ${op} (${compile(args[1], compile_data)}))`
   }
   let compiled = `this['${op}'](${args.map(e => compile(e, compile_data)).join(',')})`
   return compiled

@@ -17,7 +17,7 @@ export function evaluate(atom) {
 
   if (is_def(atom)) {
     atom = array_from_list(atom)
-    // console.log(`    var: ${symbol_to_string(atom[1])}    val: ${stringify(atom[2])}`)
+    // console.log(`    var: ${symbol_data(atom[1])}    val: ${stringify(atom[2])}`)
     // console.log(`    get_scope()[${symbol_data(atom[1])}] = jeval(${JSON.stringify(compile_tl(atom[2]))})`)
 
     let val = jeval(compile_tl(atom[2]))
@@ -30,7 +30,7 @@ export function evaluate(atom) {
   }
 }
 
-function jeval(str_code) {
+export function jeval(str_code) {
   // console.log(str_code)
   let r = Function(`return (${str_code})`).bind(get_scope())()
 

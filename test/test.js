@@ -7,7 +7,7 @@ init_runtime()
 
 
 function check(a, b) {
-  return assert.deepStrictEqual(a, b)
+  return assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)))
 }
 
 describe('parse', function() {
@@ -175,7 +175,8 @@ describe('end-to-end', function() {
   evaluate(parse('(def x 5)'))
   it('quaziquote regular', function() { check(evaluate(parse('(quaziquote (5 5))')), cons(5, cons(5, null))) })
   it('quaziquote with var', function() { check(evaluate(parse('(quaziquote ((unquote x) 5))')), cons(5, cons(5, null))) })
-  it('quaziquote with sexp', function() { check(evaluate(parse('(quaziquote ((unquote (+ 1 2)) 5))')), cons(3, cons(5, null))) })
+  it('quaziquote with sexp using builtins', function() { check(evaluate(parse('(quaziquote ((unquote (+ 1 2)) 5))')), cons(3, cons(5, null))) })
+  it('quaziquote with sexp', function() { check(evaluate(parse('(quaziquote (unquote (cons 1 nil)))')), cons(1, null)) })
   it('quaziquote with sexp using special forms 1', function() { check(evaluate(parse('(quaziquote ((unquote (if true 1 2)) 5))')), cons(1, cons(5, null))) })
   it('quaziquote with sexp using special forms 2', function() { check(evaluate(parse('(quaziquote ((unquote (if false 1 2)) 5))')), cons(2, cons(5, null))) })
   it('quaziquote with unquoted quote', function() { check(evaluate(parse('(quaziquote (1 (unquote (quote (1 2 3)))))')), cons(1, cons(cons(1, cons(2, cons(3, null))), null))) })

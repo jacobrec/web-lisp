@@ -6,6 +6,7 @@ import {
 
 export function symbol (sym) {
   this.description = sym
+  this.type = "symbol"
 }
 export function symbol_data(sym) {
   return sym.description
@@ -39,7 +40,7 @@ export function atom_nil(nil) {
 
 export let atom_is_string = (atom) => typeof atom === "string"
 export let atom_is_bool = (atom) => typeof atom === "boolean"
-export let atom_is_symbol = (atom) => atom && atom.constructor.name === "symbol"
+export let atom_is_symbol = (atom) => atom && atom.type === "symbol"
 export let atom_is_number = (atom) => typeof atom === "number"
 export let atom_is_sexp = (atom) => is_list(atom)
 export let atom_is_array = (atom) => typeof atom === "object" && Array.isArray(atom) && atom.type === undefined

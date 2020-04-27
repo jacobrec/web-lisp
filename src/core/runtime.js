@@ -65,7 +65,7 @@ export function cdr (cell) {
   return !cell ? null : cell.cdr
 }
 export function is_list (cell) {
-  return cell && cell.hasOwnProperty('car') && cell.hasOwnProperty('cdr')
+  return (cell && cell.hasOwnProperty('car') && cell.hasOwnProperty('cdr')) || cell === null
 }
 
 export function nth (cell, n) {
