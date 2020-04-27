@@ -169,7 +169,6 @@ describe('end-to-end', function() {
   it('type str', function() { check(evaluate(parse('(type "hello")')), "string") })
   it('type num', function() { check(evaluate(parse('(type 503.3)')), "number") })
   it('type bool', function() { check(evaluate(parse('(type false)')), "bool") })
-  // TODO: implement arrays
-  // it('type array', function() { check(evaluate(parse('(type [1 2 3])')), "array") })
+  it('type array', function() { check(evaluate(parse('(type [1 2 3])')), "array") })
   it('type quote list', function() { check(evaluate(parse('(type (quote (1 2 3)))')), "list") })
 })

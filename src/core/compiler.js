@@ -83,9 +83,16 @@ function compile(atom, compile_data) {
   case "symbol": return `${symbol_data(atom)}`// symbol_scope_resolution(atom, compile_data.locals)
   case "bool":   return `${atom}`
   case "list":   return compile_expr(atom, compile_data)
+  case "array":  return compile_array(atom, compile_data)
   }
   throw Error(`unknown type to compile: <${JSON.stringify(atom)}>`)
 }
+
+function compile_array(atom, compile_data) {
+  let expr = atom.map(e => scope_symbol(e, compile_data))
+  return `[${expr.join(',')}]`
+}
+
 
 function compile_expr(lexpr, compile_data) {
   let expr = array_from_list(lexpr)
@@ -96,11 +103,8 @@ function compile_expr(lexpr, compile_data) {
   } else if (atom_is_symbol(sym) && ["+", "-", "*", "/", "<", ">", "<=", ">=", "="].includes(compile(sym))) {
     return compile_binop(compile(sym), args, compile_data)
   }
-  let fn = compile(sym, compile_data)
-  if (atom_type_of(sym) === "symbol") {
-    fn = symbol_scope_resolution(sym, compile_data.locals)
-  }
-  return `(${fn})(${args.map(e => (atom_type_of(e) === "symbol") ? symbol_scope_resolution(e, compile_data.locals) :compile(e, compile_data)).join(',')})`
+  let fn = scope_symbol(sym, compile_data)
+  return `(${fn})(${args.map(e => scope_symbol(e, compile_data)).join(',')})`
 }
 
 function compile_binop(op, args, compile_data) {
@@ -109,6 +113,13 @@ function compile_binop(op, args, compile_data) {
   }
   let compiled = `this['${op}'](${args.map(e => compile(e, compile_data)).join(',')})`
   return compiled
+}
+
+function scope_symbol(atom, compile_data){
+  if (atom_type_of(atom) === "symbol") {
+    return symbol_scope_resolution(atom, compile_data.locals)
+  }
+  return compile(atom, compile_data)
 }
 
 function symbol_scope_resolution(name, locals) {

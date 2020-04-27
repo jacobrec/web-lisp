@@ -12,7 +12,7 @@ function repl () {
     let line = rl.question('>>> ')
     let parsed = parse(line)
     let evaluated = evaluate(parsed)
-    jsprint(evaluated)
+    print(evaluated)
   }
 }
 
