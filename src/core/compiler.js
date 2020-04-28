@@ -61,7 +61,7 @@ function lambda(args, compile_data) {
   }
   let body_stmts = array_from_list(map(cdr(args), e => compile(e, compile_data)))
   body_stmts[body_stmts.length - 1] = 'return ' + body_stmts[body_stmts.length - 1]
-  let c = `(${local_args.map(compile).join(',')}) => {${body_stmts.join(';')}}`
+  let c = `(${local_args.map(symbol_data).join(',')}) => {${body_stmts.join(';')}}`
   compile_data.is_top = v
   compile_data.locals = compile_data.locals[LOCAL_NEXT]
   return c
@@ -73,7 +73,7 @@ function if_expr(args, compile_data) {
 
 function def(args, compile_data) {
   // TODO: asserts for valid forms
-  let name = compile(car(args))
+  let name = symbol_data(car(args))
   if (compile_data.is_top) {
     compile_data.globals[symbol_data(car(args))] = true
     return `this['${name}'] = (${compile(nth(args, 1), compile_data)})`
@@ -171,7 +171,7 @@ function compile(atom, compile_data) {
   case "string": return `"${atom}"`
   case "number": return `${atom}`
   case "nil":    return `null`// symbol_scope_resolution(atom, compile_data.locals)
-  case "symbol": return `${symbol_data(atom)}`// symbol_scope_resolution(atom, compile_data.locals)
+  case "symbol": return `${scope_symbol(atom, compile_data)}`// symbol_scope_resolution(atom, compile_data.locals)
   case "bool":   return `${atom}`
   case "list":   return compile_expr(atom, compile_data)
   case "array":  return compile_array(atom, compile_data)
@@ -188,13 +188,13 @@ function compile_expr(lexpr, compile_data) {
   let expr = array_from_list(lexpr)
   let sym = expr[0]
   let args = expr.slice(1)
-  if (atom_is_symbol(sym) && forms[compile(sym)]) {
-    return forms[compile(sym)](cdr(lexpr), compile_data)
-  } else if (atom_is_symbol(sym) && builtins.includes(compile(sym))) {
-    return compile_binop(compile(sym), args, compile_data)
+  if (atom_is_symbol(sym) && forms[symbol_data(sym)]) {
+    return forms[symbol_data(sym)](cdr(lexpr), compile_data)
+  } else if (atom_is_symbol(sym) && builtins.includes(symbol_data(sym))) {
+    return compile_binop(symbol_data(sym), args, compile_data)
   }
-  let fn = scope_symbol(sym, compile_data)
-  return `(${fn})(${args.map(e => scope_symbol(e, compile_data)).join(',')})`
+  let fn = compile(sym, compile_data)
+  return `(${fn})(${args.map(e => compile(e, compile_data)).join(',')})`
 }
 
 function compile_binop(op, args, compile_data) {
@@ -225,8 +225,8 @@ function in_global_scope(name, locals) {
 function symbol_scope_resolution(name, locals) {
   // console.log(`Looking up ${JSON.stringify(name)} in ${JSON.stringify(locals)}`)
   if (in_global_scope(name, locals)) {
-    return `this['${compile(name)}']`
+    return `this['${symbol_data(name)}']`
   } else {
-    return compile(name)
+    return symbol_data(name)
   }
 }

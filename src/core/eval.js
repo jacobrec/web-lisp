@@ -19,7 +19,7 @@ export function evaluate(atom) {
 
 export function jeval(str_code, isdef) {
   let fn_body = isdef ? `${str_code}` : `return (${str_code})`
-  //console.log(fn_body)
+  // console.log(fn_body)
   let r = Function(fn_body).bind(get_scope())()
   //jsprint(r)
   return r
