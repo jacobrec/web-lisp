@@ -133,6 +133,7 @@ describe('end-to-end', function() {
 
   it('lambda function', function() { check(evaluate(parse('((fn (a b) (+ a b)) 1 2)')), 3) })
   it('define var', function() {assert.deepStrictEqual(evaluate(parse('(def y 3)')), undefined) })
+  it('define access global', function() {assert.deepStrictEqual(evaluate(parse('(def y 3)')), undefined) })
   evaluate(parse('(def add2 (fn (a b) (+ a b)))'))
   it('named function 1', function() { check(evaluate(parse('(add2 y 5)')), 8) })
   evaluate(parse('(def test (fn (a b) (if (< a b) b a)))'))
