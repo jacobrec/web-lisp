@@ -14,26 +14,13 @@ export function evaluate(atom) {
   // jsprint(get_scope())
   // jsprint(atom)
   // print(atom)
-
-  if (is_def(atom)) {
-    atom = array_from_list(atom)
-    // console.log(`    var: ${symbol_data(atom[1])}    val: ${stringify(atom[2])}`)
-    // console.log(`    get_scope()[${symbol_data(atom[1])}] = jeval(${JSON.stringify(compile_tl(atom[2]))})`)
-
-    let val = jeval(compile_tl(atom[2]))
-    get_scope()[compile_tl(atom[1])] = val
-    // print(atom)
-    return val
-  } else {
-    // console.log(`    eval(${JSON.stringify(compile_tl(atom))})`)
-    return jeval(compile_tl(atom))
-  }
+  return jeval(compile_tl(atom), is_def(atom))
 }
 
-export function jeval(str_code) {
-  // console.log(str_code)
-  let r = Function(`return (${str_code})`).bind(get_scope())()
-
-  // jsprint(r)
+export function jeval(str_code, isdef) {
+  let fn_body = isdef ? `${str_code}` : `return (${str_code})`
+  //console.log(fn_body)
+  let r = Function(fn_body).bind(get_scope())()
+  //jsprint(r)
   return r
 }

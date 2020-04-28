@@ -28,7 +28,10 @@ export function stringify(atom) {
   case "bool":   return `${atom}`
   case "list":   return stringify_cons(atom)
   case "array":  return `[${atom.map(stringify).join(' ')}]`
+  case"function":return `function`
+  case "macro":  return `macro`
   case "nil":    return "nil"
+  case "void":    return "void"
   }
   throw `unknown type to print: <${JSON.stringify(atom)}>`
 }

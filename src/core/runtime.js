@@ -37,6 +37,9 @@ export function init_runtime() {
   scope["<"] = function () {
     return Array.from(arguments).slice(1).reduce((a,b) => ({last: b, is_good: a.is_good && a.last < b}), {last: arguments[0], is_good: true}).is_good
   }
+  scope[">"] = function () {
+    return Array.from(arguments).slice(1).reduce((a,b) => ({last: b, is_good: a.is_good && a.last > b}), {last: arguments[0], is_good: true}).is_good
+  }
   // cons cell looks like [car, cons]
   scope["car"] = car
   scope["cdr"] = cdr

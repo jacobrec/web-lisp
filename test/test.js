@@ -132,7 +132,7 @@ describe('end-to-end', function() {
   it('false literal', function() { check(evaluate(parse('(if false "t" "f")')), "f") })
 
   it('lambda function', function() { check(evaluate(parse('((fn (a b) (+ a b)) 1 2)')), 3) })
-  it('define var', function() { check(evaluate(parse('(def y 3)')), 3) })
+  it('define var', function() {assert.deepStrictEqual(evaluate(parse('(def y 3)')), undefined) })
   evaluate(parse('(def add2 (fn (a b) (+ a b)))'))
   it('named function 1', function() { check(evaluate(parse('(add2 y 5)')), 8) })
   evaluate(parse('(def test (fn (a b) (if (< a b) b a)))'))
@@ -185,6 +185,9 @@ describe('end-to-end', function() {
   it('quaziquote with unquoted quote', function() { check(evaluate(parse('(quaziquote (1 (unquote (quote (1 2 3)))))')), cons(1, cons(cons(1, cons(2, cons(3, null))), null))) })
   it('quaziquote with unquote-splice', function() { check(evaluate(parse('(quaziquote (0 (unquote-splice (quote (1 2 3)))))')), cons(0, cons(1, cons(2, cons(3, null))))) })
   it('quaziquote with unquote-splice', function() { check(evaluate(parse('(quaziquote (1 2 (unquote-splice (quote (1 2 3))))))')), list_from_array([1, 2, 1, 2, 3])) })
+
+  // evaluate(parse('(def tm (macro () (quote 5)))'))
+  // it('macro test1', function() { check(evaluate(parse('(tm)')), 5) })
 
 
 })

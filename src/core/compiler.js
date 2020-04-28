@@ -27,13 +27,27 @@ let forms = {
   set,
   fn: lambda,
   quote,
+  macro,
   quaziquote, // also unquote
   ['quazi-eval']: quazi_eval,
 }
-let litmap = {}
-let lits = []
+
+let compile_data = {}
+compile_data.globals = {}
+compile_data.litmap = {}
+compile_data.lits = []
 
 let builtins = ["+", "-", "*", "/", "<", ">", "<=", ">=", "="]
+
+function macro(args, compile_data) {
+  // jsprint(compile_data)
+  let l = lambda(args, compile_data)
+  // console.log(l)
+  return JSON.stringify({
+    type: "macro",
+    call: l
+  })
+}
 
 function lambda(args, compile_data) {
   // TODO: asserts for valid forms
@@ -61,7 +75,8 @@ function def(args, compile_data) {
   // TODO: asserts for valid forms
   let name = compile(car(args))
   if (compile_data.is_top) {
-    return `this[${name}] = (${compile(nth(args, 1), compile_data)})`
+    compile_data.globals[symbol_data(car(args))] = true
+    return `this['${name}'] = (${compile(nth(args, 1), compile_data)})`
   } else {
     compile_data.locals[symbol_data(car(args))] = true
     return `let ${name} = (${compile(nth(args, 1), compile_data)})`
@@ -78,7 +93,7 @@ function set(args, compile_data) {
 
 function quote(args, compile_data) {
   let item = car(args)
-  return `this['__lits'][${create_literal(item)}]`
+  return `this['__lits'][${create_literal(item, compile_data)}]`
 }
 function quaziquote(args, compile_data) {
   let oitem = car(args)
@@ -130,23 +145,22 @@ function quazi_eval(args, compil_data) {
   return res
 }
 
-function create_literal(item) {
+function create_literal(item, compile_data) {
   let sitem = stringify(item)
-  if (litmap[sitem] !== undefined) {
-    return litmap[sitem]
+  if (compile_data.litmap[sitem] !== undefined) {
+    return compile_data.litmap[sitem]
   }
-  let num = lits.length
-  lits.push(item)
-  litmap[sitem] = num
+  let num = compile_data.lits.length
+  compile_data.lits.push(item)
+  compile_data.litmap[sitem] = num
   return num
 }
 
 export function init_compiler(scope) {
-  scope.__lits = lits
+  scope.__lits = compile_data.lits
 }
 
 export function compile_tl(atom) {
-  let compile_data = {}
   compile_data.is_top = true
   compile_data.locals = {}
   return compile(atom, compile_data)
