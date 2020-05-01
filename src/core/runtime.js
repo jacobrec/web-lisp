@@ -44,6 +44,7 @@ export function init_runtime() {
   scope["car"] = car
   scope["cdr"] = cdr
   scope["cons"] = cons
+  scope["map"] = map
 
   scope["parse"] = parse
   scope["evaluate"] = evaluate

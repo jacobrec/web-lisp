@@ -14,13 +14,16 @@ export function evaluate(atom) {
   // jsprint(get_scope())
   // jsprint(atom)
   // print(atom)
-  return jeval(compile_tl(atom), is_def(atom))
+  // console.log("Starting eval", stringify(atom), this)
+  let scope = this || get_scope()
+  return jeval(compile_tl(atom, scope), is_def(atom), scope)
 }
 
-export function jeval(str_code, isdef) {
+export function jeval(str_code, isdef, scope) {
   let fn_body = isdef ? `${str_code}` : `return (${str_code})`
-  // console.log(fn_body)
-  let r = Function(fn_body).bind(get_scope())()
+  // console.log("Compiles to:", fn_body)
+  // console.log("Called with scope", scope || get_scope())
+  let r = Function(fn_body).bind(scope || get_scope())()
   //jsprint(r)
   return r
 }

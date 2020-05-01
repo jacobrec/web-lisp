@@ -3,6 +3,8 @@ import { print, jsprint, stringify } from './printer.js'
 import {
   atom_type_of,
   atom_is_symbol,
+  atom_is_string,
+  atom_is_sexp,
   atom_is_nil,
   symbol_data,
   symbol,
@@ -17,6 +19,7 @@ import {
   is_list,
   nth,
   array_from_list,
+  get_scope,
 } from './runtime.js'
 
 let LOCAL_NEXT = Symbol("variable_scope")
@@ -27,9 +30,9 @@ let forms = {
   set,
   fn: lambda,
   quote,
-  macro,
   quaziquote, // also unquote
   ['quazi-eval']: quazi_eval,
+  defmacro,
 }
 
 let compile_data = {}
@@ -39,31 +42,59 @@ compile_data.lits = []
 
 let builtins = ["+", "-", "*", "/", "<", ">", "<=", ">=", "="]
 
-function macro(args, compile_data) {
+let is_macro = (atom) => typeof atom === "object" && atom && atom.type === "macro"
+function defmacro(args, compile_data) {
   // jsprint(compile_data)
-  let l = lambda(args, compile_data)
   // console.log(l)
-  return JSON.stringify({
+  let name = car(args)
+  let rargs = cdr(args)
+
+  let loc = compile_data.globals
+  let call = lambda_body(rargs, compile_data)
+  //call = "console.log('in macro call. scope: ', this);" + call
+  let fargs = lambda_extract_args(rargs, compile_data)
+  // console.log(fargs.concat([call]))
+  let fn = Function.prototype.constructor.apply({}, fargs.concat([call]))
+  // console.log("Macro Function:", fn.toString(), "args:", fargs)
+  loc[symbol_data(name)] = {
     type: "macro",
-    call: l
-  })
+    fn,
+    args: fargs
+  }
+  return undefined
+}
+
+function lambda_extract_args(args, compile_data) {
+  let local_args = array_from_list(car(args))
+  return local_args.map(symbol_data)
+}
+function lambda_body(args, compile_data) {
+  let body_stmts = array_from_list(map(cdr(args), e => compile(e, compile_data)))
+  body_stmts[body_stmts.length - 1] = 'return ' + body_stmts[body_stmts.length - 1]
+  return body_stmts
+}
+function with_lambda_scope(fn, args, compile_data) {
+  let v = compile_data.is_top
+  compile_data.is_top = false
+  compile_data.locals = { [LOCAL_NEXT]: compile_data.locals }
+  let local_args = lambda_extract_args(args, compile_data)
+  for (let l of local_args) {
+    compile_data.locals[l] = true
+  }
+  let val = fn(args, compile_data, local_args)
+  compile_data.is_top = v
+  compile_data.locals = compile_data.locals[LOCAL_NEXT]
+  return val
 }
 
 function lambda(args, compile_data) {
   // TODO: asserts for valid forms
   // jsprint(args)
-  let v = compile_data.is_top
-  compile_data.is_top = false
-  compile_data.locals = { [LOCAL_NEXT]: compile_data.locals }
-  let local_args = array_from_list(car(args))
-  for (let l of local_args) {
-    compile_data.locals[symbol_data(l)] = true
-  }
-  let body_stmts = array_from_list(map(cdr(args), e => compile(e, compile_data)))
-  body_stmts[body_stmts.length - 1] = 'return ' + body_stmts[body_stmts.length - 1]
-  let c = `(${local_args.map(symbol_data).join(',')}) => {${body_stmts.join(';')}}`
-  compile_data.is_top = v
-  compile_data.locals = compile_data.locals[LOCAL_NEXT]
+  let c = with_lambda_scope((args, compile_data, local_args) => {
+    let body_stmts = lambda_body(args, compile_data)
+    let c = `(${local_args.join(',')}) => {${body_stmts.join(';')}}`
+    return c
+  }, args, compile_data)
   return c
 }
 function if_expr(args, compile_data) {
@@ -113,7 +144,7 @@ function quaziquote(args, compile_data) {
       return quote(cons(item, null), compile_data)
     }
   }
-  let res = `this['evaluate'](JSON.parse(\`${JSON.stringify(cons(new symbol("quazi-eval"), quazi_inner(oitem)), null, 4)}\`))`
+  let res = `this['evaluate'].call(this, JSON.parse(\`${JSON.stringify(cons(new symbol("quazi-eval"), quazi_inner(oitem)), null, 4)}\`))`
   //console.log("quaziJS=", res)
   // `(1 2 ,x 4) => (`1 `2 3 `4)
   // (quaziquote (1 2 3)) => this['parse']('(1 2 3)')
@@ -127,21 +158,26 @@ function quaziquote(args, compile_data) {
 
 import { jeval } from './eval.js'
 function quazi_eval(args, compil_data) {
+
+  let scope = this
+  // console.log("qqes", scope)
   let process = e => {
     if (atom_is_nil(e)) {
       return e
     }
     let h = car(e)
     if (atom_type_of(h) === "list" && atom_type_of(car(h)) === "symbol" && symbol_data(car(h)) === "unquote-splice") {
-      return concat(jeval(cdr(h)), process(cdr(e)))
+      return concat(jeval(cdr(h), false, scope), process(cdr(e)), this)
     } else {
-      return cons(jeval(h), process(cdr(e)))
+      let head = atom_type_of(h) === "string" ? jeval(h, false, scope) : h
+      return cons(head, process(cdr(e)))
     }
   }
   //console.log("args:", args)
   let data = is_list(args) ? process(args) : jeval(args)
+  // console.log("quaziJSData=", data)
   let res = `JSON.parse(\`${JSON.stringify(data)}\`)`
-  //console.log("quaziJSPOST=", res)
+  // console.log("quaziJSPOST=", res)
   return res
 }
 
@@ -160,20 +196,21 @@ export function init_compiler(scope) {
   scope.__lits = compile_data.lits
 }
 
-export function compile_tl(atom) {
+export function compile_tl(atom, inscope) {
   compile_data.is_top = true
   compile_data.locals = {}
-  return compile(atom, compile_data)
+  return compile(atom, compile_data, inscope)
 }
 
-function compile(atom, compile_data) {
+function compile(atom, compile_data, inscope) {
   switch (atom_type_of(atom)) {
   case "string": return `"${atom}"`
   case "number": return `${atom}`
-  case "nil":    return `null`// symbol_scope_resolution(atom, compile_data.locals)
+  case "nil":    return `null`
+  case "void":   return `undefined`
   case "symbol": return `${scope_symbol(atom, compile_data)}`// symbol_scope_resolution(atom, compile_data.locals)
   case "bool":   return `${atom}`
-  case "list":   return compile_expr(atom, compile_data)
+  case "list":   return compile_expr(atom, compile_data, inscope)
   case "array":  return compile_array(atom, compile_data)
   }
   throw Error(`unknown type to compile: <${JSON.stringify(atom)}>`)
@@ -184,17 +221,68 @@ function compile_array(atom, compile_data) {
   return `[${expr.join(',')}]`
 }
 
-function compile_expr(lexpr, compile_data) {
+function compile_expr(lexpr, compile_data, inscope) {
   let expr = array_from_list(lexpr)
   let sym = expr[0]
   let args = expr.slice(1)
+  // console.log("inscope",inscope)
   if (atom_is_symbol(sym) && forms[symbol_data(sym)]) {
-    return forms[symbol_data(sym)](cdr(lexpr), compile_data)
+    return forms[symbol_data(sym)].call(inscope, cdr(lexpr), compile_data)
   } else if (atom_is_symbol(sym) && builtins.includes(symbol_data(sym))) {
     return compile_binop(symbol_data(sym), args, compile_data)
   }
   let fn = compile(sym, compile_data)
+  // console.log(`compiling call: [${fn}]`)
+  // console.log(compile_data.globals)
+  if (is_macro(compile_data.globals[symbol_data(sym)])) {
+    let mac = compile_data.globals[symbol_data(sym)]
+    // console.log("Found macro", mac)
+    let r = mac.fn
+    let scope = { ...get_scope() }
+    mac.args.map((k, i) => [k, array_from_list(cdr(lexpr))[i]]).forEach(e => {
+      let [k, v] = e
+      scope[k] = v
+
+    })
+    // console.log("calling with env:", scope, "and args", array_from_list(cdr(lexpr)))
+    let new_expr = r.apply(scope, array_from_list(cdr(lexpr)))
+    // console.log("expanded to", new_expr)
+    new_expr = reinitalize_litirals(new_expr, scope)
+    // console.log("reinitialized to:")
+    // jsprint(new_expr)
+    let res = compile(new_expr, compile_data)
+    // console.log("macro compiled to", res)
+    return res
+  }
+  // console.log("function args:", args)
   return `(${fn})(${args.map(e => compile(e, compile_data)).join(',')})`
+}
+
+function reinit_lit(lit, scope) {
+  // console.log(scope)
+  if (lit.startsWith("this['__lits']")) {
+    return jeval(lit, false, scope)
+  } else if (lit.startsWith("this[")) {
+    try {
+      let v = jeval(lit, false, scope)
+      if (v !== undefined)
+        return v
+    } catch (e) {
+    }
+  }
+  return lit
+}
+function reinitalize_litirals (expr, scope) {
+  if (expr === null) {
+    return null
+  }
+  if (!atom_is_sexp(expr) && !atom_is_string(expr)) {
+    return expr
+  }
+  let h = car(expr)
+  let t = cdr(expr)
+  return cons(atom_is_string(h) ? reinit_lit(h, scope) : reinitalize_litirals(h, scope), atom_is_string(t) ? reinit_lit(t, scope) : reinitalize_litirals(t, scope))
+
 }
 
 function compile_binop(op, args, compile_data) {

@@ -164,7 +164,9 @@ describe('end-to-end', function() {
 
   it('car', function() { check(evaluate(parse('(car (cons 1 2))')), 1) })
   it('cdr', function() { check(evaluate(parse('(cdr (cons 1 2))')), 2) })
+  it('car quote', function() { check(evaluate(parse('(car (quote (1 2 3)))')), 1) })
   it('car cdr', function() { check(evaluate(parse('(car (cdr (cons 0 (cons 1 2))))')), 1) })
+  it('map', function() { check(evaluate(parse('(map (quote (1 2 3)) (fn (x) (+ x 1)))')), list_from_array([2, 3, 4])) })
 
   it('quote', function() { check(evaluate(parse('(quote (1 2))')), cons(1, cons(2, null))) })
   it('quote compiled', function() { check(evaluate(parse('((fn () (quote (1 2))))')), cons(1, cons(2, null))) })
@@ -187,8 +189,13 @@ describe('end-to-end', function() {
   it('quaziquote with unquote-splice', function() { check(evaluate(parse('(quaziquote (0 (unquote-splice (quote (1 2 3)))))')), cons(0, cons(1, cons(2, cons(3, null))))) })
   it('quaziquote with unquote-splice', function() { check(evaluate(parse('(quaziquote (1 2 (unquote-splice (quote (1 2 3))))))')), list_from_array([1, 2, 1, 2, 3])) })
 
-  // evaluate(parse('(def tm (macro () (quote 5)))'))
-  // it('macro test1', function() { check(evaluate(parse('(tm)')), 5) })
+  evaluate(parse('(defmacro tm () (quote 5))'))
+  it('macro test1', function() { check(evaluate(parse('(tm)')), 5) })
+  it('macro test2', function() {
+    evaluate(parse('(defmacro cadr (x) (quaziquote (car (cdr (unquote x)))))'))
+    check(evaluate(parse('(car (cdr (quote (1 2 3))))')), 2)
+    check(evaluate(parse('(cadr (quote (1 2 3)))')), 2)
+  })
 
 
 })
